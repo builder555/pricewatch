@@ -3,14 +3,16 @@ import json
 import os
 from time import sleep
 from datetime import datetime
+import asyncio
 
 from readers import demo_store
 from readers import homedepot_ca
 from readers import homedepot_com
 from notifiers import demo_notifier
+from notifiers import telegram_notifier
 
-def notify(msg: str):
-    demo_notifier.notify(msg, 'test@example.com')
+async def notify(msg: str):
+    await telegram_notifier.notify(msg)
 
 def get_price_extractor(site: str):
     readers = {
@@ -46,7 +48,7 @@ def save_items(items: list[Item]):
     with open('items.json', 'w+') as f:
         json.dump([item.__dict__() for item in items], f)
 
-def main():
+async def main():
     items = get_items()
     for item in items:
         current_time = datetime.now()
@@ -60,11 +62,11 @@ def main():
         sleep(2)
         if price != item.last_price:
             print('Price has changed!')
-            notify(f'Price has changed for {item.name} from ${item.last_price} to ${price}. Check it out: {item.url}')
+            await notify(f'Price has changed for {item.name} from ${item.last_price} to ${price}. Check it out: {item.url}')
             item.last_price = price
         elif item.always_notify:
-            notify(f'Price has not changed for {item.name}: ${price}')
+            await notify(f'Price has not changed for {item.name}: ${price}')
     save_items(items)
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
