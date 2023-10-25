@@ -5,6 +5,8 @@ from time import sleep
 from datetime import datetime
 
 from readers import demo_store
+from readers import homedepot_ca
+from readers import homedepot_com
 from notifiers import demo_notifier
 
 def notify(msg: str):
@@ -13,6 +15,8 @@ def notify(msg: str):
 def get_price_extractor(site: str):
     readers = {
         demo_store.SITE: demo_store.get_price,
+        homedepot_com.SITE: homedepot_com.get_price,
+        homedepot_ca.SITE: homedepot_ca.get_price,
     }
     return readers[site]
 
