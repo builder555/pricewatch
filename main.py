@@ -4,22 +4,35 @@ import os
 from time import sleep
 from datetime import datetime
 import asyncio
+from pathlib import Path
+import importlib
 
-from readers import homedepot_ca
-from readers import homedepot_com
-from readers import harborfreight
 from notifiers import telegram_notifier
+
+os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+
+class Modules:
+    def __init__(self):
+        self.modules = []
+        module_files = Path('./readers').rglob('*.py')
+        for module_file in module_files:
+            module_name = module_file.stem
+            module = importlib.import_module(f'readers.{module_name}')
+            if hasattr(module, 'SITE'):
+                self.modules.append(module)
+    def __getitem__(self, key):
+        for m in self.modules:
+            if m.SITE in key:
+                return m
 
 async def notify(msg: str):
     await telegram_notifier.notify(msg)
 
 def get_price_extractor(site: str):
-    readers = {
-        homedepot_com.SITE: homedepot_com.get_price,
-        homedepot_ca.SITE: homedepot_ca.get_price,
-        harborfreight.SITE: harborfreight.get_price,
-    }
-    return readers[site]
+    module = Modules()[site]
+    if module is None:
+        raise KeyError(f"No reader found for site '{site}'")
+    return module.get_price
 
 @dataclass
 class Item:
@@ -57,7 +70,9 @@ async def main():
             try:
                 price = get_price(item)
                 break
-            except:
+            except KeyboardInterrupt:
+                return
+            except Exception:
                 retries -= 1
         else:
             print('error')
