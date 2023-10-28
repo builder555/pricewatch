@@ -25,7 +25,9 @@ def get_price(url):
     r = requests.get(url, headers=headers, timeout=10)
     text = r.text
     price_group_start = text.find('currencyIso')
-    price_group_end = text.find('}', price_group_start)
-    price_value_start = text.find('value&q;:', price_group_start)+9
-    price_value = text[price_value_start:price_group_end]
+    price_value_start = text.find('$', price_group_start)+1
+    price_value_end = price_value_start
+    while text[price_value_end].isdigit() or text[price_value_end] == '.':
+        price_value_end += 1
+    price_value = text[price_value_start:price_value_end]
     return float(price_value)
