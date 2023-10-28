@@ -8,7 +8,7 @@ import asyncio
 from readers import demo_store
 from readers import homedepot_ca
 from readers import homedepot_com
-from notifiers import demo_notifier
+from readers import harborfreight
 from notifiers import telegram_notifier
 
 async def notify(msg: str):
@@ -19,6 +19,7 @@ def get_price_extractor(site: str):
         demo_store.SITE: demo_store.get_price,
         homedepot_com.SITE: homedepot_com.get_price,
         homedepot_ca.SITE: homedepot_ca.get_price,
+        harborfreight.SITE: harborfreight.get_price,
     }
     return readers[site]
 
