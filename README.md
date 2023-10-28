@@ -16,6 +16,17 @@ cd pricewatch
 PIPENV_VENV_IN_PROJECT=true pipenv install
 ```
 
+## Set up tokens
+
+Any tokens (e.g. for telegram notifier) need to be placed in `.env` file in the `pricewatch` folder
+
+e.g.:
+
+```.env
+TELEGRAM_TOKEN=2223545336:AAAAAAAAAABBBBBBBBBCCCCCCCCCDDDDDDDD
+TELEGRAM_CHAT_ID=555555555
+```
+
 ## Run
 
 Usage (__NB__: the example URL may not work anymore):
