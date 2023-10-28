@@ -5,7 +5,6 @@ from time import sleep
 from datetime import datetime
 import asyncio
 
-from readers import demo_store
 from readers import homedepot_ca
 from readers import homedepot_com
 from readers import harborfreight
@@ -16,7 +15,6 @@ async def notify(msg: str):
 
 def get_price_extractor(site: str):
     readers = {
-        demo_store.SITE: demo_store.get_price,
         homedepot_com.SITE: homedepot_com.get_price,
         homedepot_ca.SITE: homedepot_ca.get_price,
         harborfreight.SITE: harborfreight.get_price,
@@ -54,10 +52,15 @@ async def main():
     for item in items:
         current_time = datetime.now()
         print(f'[{current_time}] Checking {item.name}...', end='')
-        try:
-            price = get_price(item)
-        except:
-            print('Error')
+        retries = 10
+        while retries > 0:
+            try:
+                price = get_price(item)
+                break
+            except:
+                retries -= 1
+        else:
+            print('error')
             continue
         print(f'${price}')
         sleep(2)
