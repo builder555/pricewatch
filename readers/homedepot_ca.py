@@ -20,7 +20,6 @@ def get_price(url):
         'authority': 'www.homedepot.ca',
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'dnt': '1',
-        'if-none-match': 'W/"8a115-FpxoaisDADzOfo5rWXGaLbeeVJ8"',
         'sec-ch-ua': '"Not_A Brand";v="99", "Brave";v="109", "Chromium";v="109"',
     }
     r = requests.get(url, headers=headers, timeout=10)
