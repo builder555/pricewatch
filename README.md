@@ -38,5 +38,5 @@ Send to test@example.com
 You can also set up a cronjob to run periodically:
 
 ```
-0 */4 * * * cd /home/me/pricewatch && .venv/bin/python main.py
+0 */4 * * * cd /home/me/pricewatch && /usr/bin/pipenv run start >>log.txt 2>>error.txt
 ```
