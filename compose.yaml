@@ -3,5 +3,5 @@ services:
     build:
       context: .
     ports:
-      - 8000:8000
+      - 8700:8700
 
