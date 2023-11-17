@@ -16,7 +16,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-
+COPY . .
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
@@ -30,22 +30,8 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-RUN apt update && apt upgrade -y && python -m pip install pipenv 
-#&& pipenv install
+RUN apt update && apt upgrade -y && python -m pip install pipenv crontab && pipenv install
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-# RUN pipenv install
-
-# Switch to the non-privileged user to run the application.
-# USER appuser
-
-# Copy the source code into the container.
-COPY . .
-
-RUN pipenv install
 
 # Expose the port that the application listens on.
 EXPOSE 8700
