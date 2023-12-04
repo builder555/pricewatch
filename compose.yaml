@@ -2,6 +2,10 @@ services:
   pricewatch:
     build:
       context: .
+    env_file:
+      - .env
+    volumes:
+      - ./items.json:/app/items.json
     ports:
       - 8700:8700
 

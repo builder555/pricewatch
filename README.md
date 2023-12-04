@@ -3,20 +3,48 @@ A way to monitor an item on a website and get notified of the price changes
 
 Add modules to `/readers` directory that can extract the price from a site. See `demo_store.py` as an example.
 
-## Prerequisites
+## Running
 
-* python 3.10+
-* pipenv
-
-## Install
+Clone the repo:
 
 ```bash
 git clone https://github.com/builder555/pricewatch.git
 cd pricewatch
+```
+
+## Docker
+
+Put tokens in `.env` file.
+
+e.g. for telegram notifier:
+
+```.env
+TELEGRAM_TOKEN=2223545336:AAAAAAAAAABBBBBBBBBCCCCCCCCCDDDDDDDD
+TELEGRAM_CHAT_ID=555555555
+```
+
+Modify `items.json` as needed - add whichever items you want to monitor, follow the example provided in the file.
+
+Run it using docker compose:
+
+```bash
+docker compose up -d
+```
+
+## Stand-alone
+
+### Prerequisites
+
+* python 3.10+
+* pipenv
+
+### Install
+
+```bash
 PIPENV_VENV_IN_PROJECT=true pipenv install
 ```
 
-## Set up tokens
+### Set up tokens
 
 Any tokens (e.g. for telegram notifier) need to be placed in `.env` file in the `pricewatch` folder
 
@@ -27,7 +55,7 @@ TELEGRAM_TOKEN=2223545336:AAAAAAAAAABBBBBBBBBCCCCCCCCCDDDDDDDD
 TELEGRAM_CHAT_ID=555555555
 ```
 
-## Run
+### Run
 
 Usage (__NB__: the example URL may not work anymore):
 ```bash
