@@ -1,6 +1,6 @@
 services:
   pricewatch:
-    image: pricewatch:latest
+    image: builder555/pricewatch:latest
     env_file:
       - .env
     volumes:
