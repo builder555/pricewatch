@@ -1,6 +1,7 @@
 services:
   pricewatch:
-    image: pricewatch:latest
+    build:
+      context: .
     env_file:
       - .env
     volumes:
