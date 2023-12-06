@@ -91,7 +91,12 @@
     <div id="app" class="container">
         <div class="columns">
             <div class="column is-8 is-12-mobile">
-                <input type="text" v-model="searchTerm" placeholder="Search by name" style="width:100%">
+                <input
+                  type="text"
+                  placeholder="Search by name"
+                  style="width:100%"
+                  v-model="searchTerm"
+                >
             </div>
             <div class="column is-4 is-12-mobile align-right-tablet align-left-mobile">
                 <button @click="addItem">Add New Item</button>
@@ -129,11 +134,21 @@
     <script src="vue.global.prod.min.js"></script>
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
-        const getItems = async () => {
-            const baseURl = `${window.location.protocol}//${window.location.host}`;
+        const baseURl = `${window.location.protocol}//${window.location.host}`;
+        const apiGetItems = async () => {
             const response = await fetch(`${baseURl}/items`);
             const items = await response.json();
             return items;
+        };
+        const apiDeleteItem = async (id) => {
+            const response = await fetch(`${baseURl}/items/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                const text = await response.text();
+                console.error(text);
+                throw new Error(text);
+            }
         };
         createApp({
           setup() {
@@ -141,7 +156,7 @@
             const searchTerm = ref('');
 
             onMounted(async () => {
-                const fetchedItems = await getItems();
+                const fetchedItems = await apiGetItems();
                 items.value = fetchedItems.map(item => ({
                     ...item,
                     isSaved: true,
@@ -165,9 +180,14 @@
               });
             };
         
-            const deleteItem = (index) => {
+            const deleteItem = async (index) => {
               if (confirm('Are you sure?')) {
-                items.value.splice(index, 1);
+                try {
+                  await apiDeleteItem(index);
+                  items.value.splice(index, 1);
+                } catch (error) {
+                  alert('Something went wrong. Check the server log.');
+                }
               }
             };
         
