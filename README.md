@@ -3,6 +3,9 @@ A way to monitor an item on a website and get notified of the price changes
 
 Add modules to `/readers` directory that can extract the price from a site. See `demo_store.py` as an example.
 
+> [!CAUTION]
+> **NB:** FOR PERSONAL USE ONLY! THIS IS NOT SECURE FOR A PRODUCTION SYSTEM!
+
 ## Running
 
 Clone the repo:
@@ -86,4 +89,11 @@ You can also set up a cronjob to run periodically:
 
 ```
 0 */4 * * * cd /home/me/pricewatch && /usr/bin/pipenv run start >>log.txt 2>>error.txt
+```
+
+To use the UI, run the following:
+
+```bash
+cd ui
+python server.py
 ```
