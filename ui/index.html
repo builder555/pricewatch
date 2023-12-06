@@ -102,23 +102,24 @@
             :key="item.id"
             class="columns"
         >
-        <div class="column is-12-mobile is-8">
-            <span>{{ item.title }} - ${{ item.price }}</span>
-                </div>
-                <div class="column is-12-mobile is-4 align-left-mobile align-right-tablet">
-                    <a @click="modifyItem(index)" role="button" class="info">
-                        <span class="material-symbols-outlined">
-                            stylus
-                        </span>
-                    </a>
-                    <a @click="deleteItem(index)" role="button" class="danger">
-                        <span class="material-symbols-outlined">
-                            delete
-                        </span>
-                    </a>
-                </div>
+            <div class="column is-12-mobile is-8">
+                <a :href="item.url" target="blank_">{{ item.name }}</a>
+            </div>
+            <div class="column is-12-mobile is-4 align-left-mobile align-right-tablet">
+                ${{ item.last_price }}
+                <a @click="modifyItem(index)" role="button" class="info">
+                    <span class="material-symbols-outlined">
+                        stylus
+                    </span>
+                </a>
+                <a @click="deleteItem(index)" role="button" class="danger">
+                    <span class="material-symbols-outlined">
+                        delete
+                    </span>
+                </a>
+            </div>
             <div v-if="item.isEditing" class="columns">
-                <input type="text" v-model="item.title">
+                <input type="text" v-model="item.name">
                 <input type="text" v-model="item.url">
                 <button @click="saveItem(index)" class="info">Save</button>
                 <button @click="cancelEdit(index)" class="warning">Cancel</button>
@@ -127,53 +128,48 @@
     </div>
     <script src="vue.global.prod.min.js"></script>
     <script>
-        const { createApp, ref, computed } = Vue;
-        
+        const { createApp, ref, computed, onMounted } = Vue;
+        const getItems = async () => {
+            // use current url as base
+            const baseURl = window.location.href;
+            const response = await fetch(`${baseURl}/items`);
+            const items = await response.json();
+            return items;
+        };
         createApp({
           setup() {
-            const items = ref([
-                {
-                    id: 1,
-                    title: 'Item 1',
-                    price: 10,
-                    url: 'https://www.google.com',
-                    isEditing: false
-                },
-                {
-                    id: 2,
-                    title: 'Item 2aweo tpaowiet pao',
-                    price: 20,
-                    url: 'https://www.google.com',
-                    isEditing: false
-                },
-                {
-                    id: 3,
-                    title: 'Item 3twepip',
-                    price: 30,
-                    url: 'https://www.google.com',
-                    isEditing: false
-                }
-            ]);
+            const items = ref([]);
             const searchTerm = ref('');
+
+            onMounted(async () => {
+                const fetchedItems = await getItems();
+                items.value = fetchedItems.map(item => ({
+                    ...item,
+                    isSaved: true,
+                    isEditing: false
+                }));
+            });
         
             const filteredItems = computed(() => {
               return items.value.filter(item => 
-                item.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+                item.name.toLowerCase().includes(searchTerm.value.toLowerCase())
               );
             });
         
             const addItem = () => {
               items.value.push({
-                id: null,
-                title: '',
-                price: 0,
+                name: '',
+                last_price: 0,
                 url: '',
+                isSaved: false,
                 isEditing: true
               });
             };
         
             const deleteItem = (index) => {
-              items.value.splice(index, 1);
+              if (confirm('Are you sure?')) {
+                items.value.splice(index, 1);
+              }
             };
         
             const modifyItem = (index) => {
@@ -181,15 +177,13 @@
             };
         
             const saveItem = (index) => {
-                if (!items.value[index].id) {
-                    items.value[index].id = Date.now();
-                }
+              items.value[index].isSaved = true;
               items.value[index].isEditing = false;
             };
         
             const cancelEdit = (index) => {
-              if (!items.value[index].id) {
-                deleteItem(index); // Remove if it's a new, unsaved item
+              if (!items.value[index].isSaved) {
+                deleteItem(index);
               } else {
                 items.value[index].isEditing = false;
               }

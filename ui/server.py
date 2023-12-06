@@ -4,10 +4,13 @@ import urllib.parse
 class SimpleWebServer(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
-            print(self.path)
             if self.path == '/':
-                self.path = '/index.html'
-            file_to_open = open(self.path[1:]).read()
+                path = '/index.html'
+            elif self.path == '/items':
+                path = '/../items.json'
+            else:
+                path = self.path
+            file_to_open = open(path[1:]).read()
             self.send_response(200)
         except FileNotFoundError:
             file_to_open = "File not found!"
@@ -19,7 +22,7 @@ class SimpleWebServer(BaseHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         data = urllib.parse.parse_qs(post_data.decode('utf-8'))
-
+        
         print(data)
 
         self.send_response(200)
