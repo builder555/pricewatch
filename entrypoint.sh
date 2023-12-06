@@ -1,3 +1,4 @@
 #!/bin/sh
 env | sed 's/^/export /' >> /etc/environment
-crond -f
+crond
+cd /app/ui/ && python server.py

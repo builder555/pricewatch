@@ -37,6 +37,8 @@ For development, you should use `compose-dev.yml`:
 docker compose -f compose-dev.yml up -d --build
 ```
 
+Open [http://localhost:8700/][http://localhost:8700/] (assuming you didn't override the port) to view the UI.
+
 ## Stand-alone
 
 ### Prerequisites
