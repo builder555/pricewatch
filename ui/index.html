@@ -130,8 +130,7 @@
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
         const getItems = async () => {
-            // use current url as base
-            const baseURl = window.location.href;
+            const baseURl = `${window.location.protocol}//${window.location.host}`;
             const response = await fetch(`${baseURl}/items`);
             const items = await response.json();
             return items;
@@ -157,7 +156,7 @@
             });
         
             const addItem = () => {
-              items.value.push({
+              items.value.unshift({
                 name: '',
                 last_price: 0,
                 url: '',
