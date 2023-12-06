@@ -31,6 +31,12 @@ Run it using docker compose:
 docker compose up -d
 ```
 
+For development, you should use `compose-dev.yml`:
+
+```bash
+docker compose -f compose-dev.yml up -d --build
+```
+
 ## Stand-alone
 
 ### Prerequisites

@@ -9,4 +9,3 @@ services:
       - ./items.json:/app/items.json
     ports:
       - 8700:8700
-
