@@ -39,7 +39,6 @@ class Item:
     name: str
     url: str
     last_price: float
-    always_notify: bool
     def __dict__(self):
         return asdict(self)
 
@@ -83,8 +82,6 @@ async def main():
             print('Price has changed!')
             await notify(f'Price has changed for {item.name} from ${item.last_price} to ${price}. Check it out: {item.url}')
             item.last_price = price
-        elif item.always_notify:
-            await notify(f'Price has not changed for {item.name}: ${price}')
     save_items(items)
 
 if __name__ == '__main__':
