@@ -1,17 +1,21 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import json
+
+from app.db import add_item, get_items, delete_item
+
 class SimpleWebServer(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             if self.path == '/':
                 path = '/index.html'
-            elif self.path == '/items':
-                path = '/../items.json'
             else:
                 path = self.path
-            with open(path[1:], 'r') as file_to_open:
-                data_to_send = file_to_open.read()
+            if path == '/items':
+                data_to_send = json.dumps(get_items())
+            else:
+                with open(path[1:], 'r') as file_to_open:
+                    data_to_send = file_to_open.read()
             self.send_response(200)
         except FileNotFoundError:
             data_to_send = "File not found!"
@@ -32,24 +36,8 @@ class SimpleWebServer(BaseHTTPRequestHandler):
         self.wfile.write(response)
     
     def do_DELETE(self):
-        print(self.path)
         item_index = int(self.path.split('/')[-1])
-        
-        with open('../items.json', 'r') as f:
-            items = json.load(f)
-
-        if len(items) <= item_index:
-            self.send_response(404)
-            self.end_headers()
-            response = bytes("Item not found", 'utf-8')
-            self.wfile.write(response)
-            return
-        
-        del items[item_index]
-        
-        with open('../items.json', 'w') as f:
-            json.dump(items, f)
-        
+        delete_item(item_index)
         self.send_response(200)
         self.end_headers()
         response = bytes("Delete request processed", 'utf-8')

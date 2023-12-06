@@ -5,7 +5,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./items.json:/app/items.json
+      - ./items.json:/app/app/db/items.json
     ports:
       - 8700:8700
 
