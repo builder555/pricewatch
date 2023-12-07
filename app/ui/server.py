@@ -22,14 +22,16 @@ class SimpleWebServer(BaseHTTPRequestHandler):
             if path == '/items':
                 data_to_send = json.dumps(get_items(), cls=ItemJSONEncoder)
             else:
-                with open(os.path.join(base_path,path[1:]), 'r') as file_to_open:
+                with open(os.path.join(base_path,path[1:]), 'rb') as file_to_open:
                     data_to_send = file_to_open.read()
             self.send_response(200)
         except FileNotFoundError:
             data_to_send = "File not found!"
             self.send_response(404)
         self.end_headers()
-        self.wfile.write(bytes(data_to_send, 'utf-8'))
+        if isinstance(data_to_send, str):
+            data_to_send = data_to_send.encode('utf-8')
+        self.wfile.write(data_to_send)
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
