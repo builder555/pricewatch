@@ -9,8 +9,14 @@ class Item:
     name: str
     url: str
     last_price: float
+    @property
     def __dict__(self):
         return asdict(self)
+class ItemJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if hasattr(o, '__dict__'):
+            return o.__dict__
+        return super().default(o)
 
 def get_items() -> list[Item]:
     items = []
@@ -22,7 +28,7 @@ def get_items() -> list[Item]:
 
 def save_items(items: list[Item]):
     with open(db_path, 'w+') as f:
-        json.dump([item.__dict__() for item in items], f)
+        json.dump([item.__dict__ for item in items], f)
 
 def delete_item(index: int):
     items = get_items()

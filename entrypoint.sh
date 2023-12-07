@@ -1,4 +1,4 @@
 #!/bin/sh
 env | sed 's/^/export /' >> /etc/environment
 crond
-cd /app/ui/ && python server.py
+cd /app && python -m app.ui.server

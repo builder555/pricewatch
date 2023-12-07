@@ -1,20 +1,28 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import json
+import os
+from app.db import add_item, get_items, delete_item, ItemJSONEncoder, Item, save_items
+from app.readers import get_item_price_with_retries
 
-from app.db import add_item, get_items, delete_item
+def fetch_price_and_add_item(name: str, url: str):
+    items = get_items()
+    price = get_item_price_with_retries(url)
+    items.append(Item(name, url, price))
+    save_items(items)
 
 class SimpleWebServer(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
+            base_path = os.path.dirname(__file__)
             if self.path == '/':
                 path = '/index.html'
             else:
                 path = self.path
             if path == '/items':
-                data_to_send = json.dumps(get_items())
+                data_to_send = json.dumps(get_items(), cls=ItemJSONEncoder)
             else:
-                with open(path[1:], 'r') as file_to_open:
+                with open(os.path.join(base_path,path[1:]), 'r') as file_to_open:
                     data_to_send = file_to_open.read()
             self.send_response(200)
         except FileNotFoundError:
@@ -26,10 +34,9 @@ class SimpleWebServer(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
-        data = urllib.parse.parse_qs(post_data.decode('utf-8'))
         
-        print(data)
-
+        data = json.loads(post_data)
+        fetch_price_and_add_item(data['name'], data['url'])
         self.send_response(200)
         self.end_headers()
         response = bytes("Post request processed", 'utf-8')
