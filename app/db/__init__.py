@@ -39,3 +39,8 @@ def add_item(item: Item):
     items = get_items()
     items.append(item)
     save_items(items)
+
+def update_item(index: int, item: Item):
+    items = get_items()
+    items[index] = item
+    save_items(items)
