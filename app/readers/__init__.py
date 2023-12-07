@@ -9,7 +9,6 @@ class PriceExtractor(Protocol):
 class Modules:
     def __init__(self):
         self.modules = []
-        # current file location
         current_dir = Path(__file__).parent
         module_files = Path(current_dir).rglob('*.py')
         for module_file in module_files:
@@ -37,12 +36,14 @@ def get_price(url: str) -> float:
 
 def get_item_price_with_retries(url: str, max_retires: int = 10) -> float:
     retries = max_retires
+    exception = Exception('error')
     while retries > 0:
         try:
             price = get_price(url)
             break
-        except Exception:
+        except Exception as e:
+            exception = e
             retries -= 1
     else:
-        raise Exception('Error')
+        raise exception
     return price
