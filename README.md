@@ -91,9 +91,8 @@ You can also set up a cronjob to run periodically:
 0 */4 * * * cd /home/me/pricewatch && /usr/bin/pipenv run start >>log.txt 2>>error.txt
 ```
 
-To use the UI, run the following:
+To use the UI, run the following (after running `pipenv shell`):
 
 ```bash
-cd ui
-python server.py
+python -m app.ui.server
 ```
