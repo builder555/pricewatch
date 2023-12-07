@@ -15,6 +15,22 @@ agents = [
     'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
 ]
 
+def try_to_extract_using_bs(text: str) -> float:
+    # sometimes doesn't work, depending on what HTML is returned
+    soup = BeautifulSoup(text, 'html.parser')
+    price = soup.find("span", {"itemprop": "price"}).text
+    return float(price.strip().strip('$').strip())
+
+def try_to_extract_using_text_search(text: str) -> float: 
+    # may not be the most accurate, but seems to always work
+    price_group_start = text.find('currencyIso')
+    price_value_start = text.find('$', price_group_start)+1
+    price_value_end = price_value_start
+    while text[price_value_end].isdigit() or text[price_value_end] == '.':
+        price_value_end += 1
+    price_value = text[price_value_start:price_value_end]
+    return float(price_value)
+
 def get_price(url):
     headers = {
         'User-Agent': random.choice(agents), 
@@ -24,7 +40,7 @@ def get_price(url):
         'sec-ch-ua': '"Not_A Brand";v="99", "Brave";v="109", "Chromium";v="109"',
     }
     r = requests.get(url, headers=headers, timeout=10)
-    text = r.text
-    soup = BeautifulSoup(text, 'html.parser')
-    price = soup.find("span", {"itemprop": "price"}).text
-    return float(price.strip().strip('$').strip())
+    try:
+        return try_to_extract_using_bs(r.text)
+    except:
+        return try_to_extract_using_text_search(r.text)

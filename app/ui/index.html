@@ -6,7 +6,6 @@
     <title>PriceWatch</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@40,400,1,0" />
     <link rel="stylesheet" href="water.min.css">
-    <!-- <link rel="stylesheet" href="bulma.min.css"> -->
     <style>
         /* Container Styles */
         .container {
@@ -85,6 +84,24 @@
         .info {
             color: hsl(204, 86%, 53%);
         }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .loader {
+          --spinner-size: 1rem;
+          border: calc(var(--spinner-size) * 0.2) solid rgba(190, 190, 190, 0.5);
+          border-top: calc(var(--spinner-size) * 0.2) solid #82db34;
+          border-radius: 50%;
+          width: var(--spinner-size);
+          height: var(--spinner-size);
+          animation: spin 0.5s linear infinite;
+          margin: 0 auto;
+        }
+        [role="button"] {
+          display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -102,32 +119,62 @@
                 <button @click="addItem">Add New Item</button>
             </div>
         </div>
+        <div class="loader" v-show="isProcessing"></div>
         <div
             v-for="(item, index) in filteredItems"
             :key="item.id"
             class="columns"
         >
-            <div class="column is-12-mobile is-8">
+            <div class="column is-12-mobile is-8" v-show="!item.isEditing" >
                 <a :href="item.url" target="blank_">{{ item.name }}</a>
             </div>
-            <div class="column is-12-mobile is-4 align-left-mobile align-right-tablet">
+            <div class="column is-12-mobile is-4 align-left-mobile align-right-tablet" v-show="!item.isEditing" >
                 ${{ item.last_price }}
-                <a @click="modifyItem(index)" role="button" class="info">
-                    <span class="material-symbols-outlined">
-                        stylus
-                    </span>
+                <a
+                  tabindex="0"
+                  @click="modifyItem(index)"
+                  role="button"
+                  class="info"
+                  :disabled="item.isEditing || item.isProcessing"
+                >
+                    <span class="material-symbols-outlined">stylus</span>
                 </a>
-                <a @click="deleteItem(index)" role="button" class="danger">
-                    <span class="material-symbols-outlined">
-                        delete
-                    </span>
-                </a>
+                <div
+                  tabindex="0"
+                  @click="deleteItem(index)"
+                  role="button"
+                  class="danger"
+                  :disabled="item.isEditing || item.isProcessing"
+                >
+                    <span class="material-symbols-outlined">delete</span>
+                </div>
             </div>
-            <div v-if="item.isEditing" class="columns">
-                <input type="text" v-model="item.name">
-                <input type="text" v-model="item.url">
-                <button @click="saveItem(index)" class="info">Save</button>
-                <button @click="cancelEdit(index)" class="warning">Cancel</button>
+            <div v-if="item.isEditing" class="columns column is-12-mobile" stlye="justify-content:space-between">
+                <input
+                  type="text"
+                  v-model="item.name"
+                  placeholder="Display Name"
+                >
+                <input
+                  type="url"
+                  v-model="item.url"
+                  style="flex-grow:2"
+                  placeholder="URL"
+                  pattern="https://.*"
+                >
+                <button
+                  @click="saveItem(index)"
+                  class="info"
+                  :disabled="item.isProcessing"
+                >
+                  <div class="loader" v-if="item.isProcessing"></div>
+                  <span v-else>Save</span>
+                </button>
+                <button
+                  @click="cancelEdit(index)"
+                  class="warning"
+                  :disabled="item.isProcessing"
+                >Cancel</button>
             </div>
         </div>
     </div>
@@ -135,6 +182,7 @@
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
         const baseURl = `${window.location.protocol}//${window.location.host}`;
+        const isProcessing = ref(false);
         const apiGetItems = async () => {
             const response = await fetch(`${baseURl}/items`);
             const items = await response.json();
@@ -150,19 +198,57 @@
                 throw new Error(text);
             }
         };
+        const apiAddItem = async (item) => {
+            const response = await fetch(`${baseURl}/items`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(item)
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                console.error(text);
+                throw new Error(text);
+            }
+            return Number(text);
+        };
+        const apiUpdateItem = async (index, item) => {
+            const response = await fetch(`${baseURl}/items/${index}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(item)
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                console.error(text);
+                throw new Error(text);
+            }
+        };
         createApp({
           setup() {
             const items = ref([]);
             const searchTerm = ref('');
 
-            onMounted(async () => {
+            async function fetchAllItems() {
+              try {
+                isProcessing.value = true;
                 const fetchedItems = await apiGetItems();
                 items.value = fetchedItems.map(item => ({
                     ...item,
                     isSaved: true,
-                    isEditing: false
+                    isEditing: false,
+                    isProcessing: false,
                 }));
-            });
+              } catch (error) {
+                alert('Something went wrong when loading items. Check the server log.');
+                isProcessing.value = false;
+              }
+            }
+
+            onMounted(async () => await fetchAllItems());
         
             const filteredItems = computed(() => {
               return items.value.filter(item => 
@@ -183,9 +269,11 @@
             const deleteItem = async (index) => {
               if (confirm('Are you sure?')) {
                 try {
+                  items.value[index].isProcessing = true;
                   await apiDeleteItem(index);
                   items.value.splice(index, 1);
                 } catch (error) {
+                  items.value[index].isProcessing = false;
                   alert('Something went wrong. Check the server log.');
                 }
               }
@@ -195,14 +283,29 @@
               items.value[index].isEditing = true;
             };
         
-            const saveItem = (index) => {
-              items.value[index].isSaved = true;
-              items.value[index].isEditing = false;
+            const saveItem = async (index) => {
+              const item = items.value[index];
+              const { name, url } = item;
+              item.isProcessing = true;
+              try {
+                if (!item.isSaved) {
+                  const id = await apiAddItem({ name, url });
+                  await fetchAllItems();
+                }
+                else {
+                  await apiUpdateItem(index, { name, url });
+                }
+                item.isSaved = true;
+                item.isEditing = false;
+              } catch (error) {
+                item.isProcessing = false;
+                alert('Something went wrong. Check the server log.');
+              }
             };
         
             const cancelEdit = (index) => {
               if (!items.value[index].isSaved) {
-                deleteItem(index);
+                items.value.splice(index, 1);
               } else {
                 items.value[index].isEditing = false;
               }
