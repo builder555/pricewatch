@@ -2,7 +2,7 @@ import os
 from time import sleep
 from datetime import datetime
 import asyncio
-from app.notifiers import telegram_notifier
+from app.notifiers import telegram_notifier, demo_notifier
 from app.db import get_items, save_items
 from app.readers import get_item_price_with_retries
 

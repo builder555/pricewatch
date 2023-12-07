@@ -8,72 +8,88 @@ Add modules to `/readers` directory that can extract the price from a site. See 
 
 ## Running
 
-Clone the repo:
+1. Create a `docker-compose.yaml` file:
+
+    ```yaml
+    services:
+      pricewatch:
+        image: builder555/pricewatch:latest
+        container_name: pricewatch
+        env_file:
+          - .env
+        volumes:
+          - ./items.json:/app/app/db/items.json
+        ports:
+          - 8700:8700
+    ```
+
+2. Save [items-example.json](./items-example.json) as `items.json` file in the same directory.
+
+3. Put tokens in `.env` file.
+
+    e.g. for telegram notifier:
+
+    ```.env
+    TELEGRAM_TOKEN=2223545336:AAAAAAAAAABBBBBBBBBCCCCCCCCCDDDDDDDD
+    TELEGRAM_CHAT_ID=555555555
+    ```
+
+4. Run it using docker compose:
+
+    ```bash
+    docker compose up -d
+    ```
+
+5. Navigate to [http://localhost:8700](http://localhost:8700)
+
+You should see a page that looks like this:
+
+![screenshot](screenshot.png)
+
+## Development
 
 ```bash
 git clone https://github.com/builder555/pricewatch.git
 cd pricewatch
 ```
 
-## Docker
+### Docker
 
-Put tokens in `.env` file.
-
-e.g. for telegram notifier:
-
-```.env
-TELEGRAM_TOKEN=2223545336:AAAAAAAAAABBBBBBBBBCCCCCCCCCDDDDDDDD
-TELEGRAM_CHAT_ID=555555555
-```
-
-Modify `items.json` as needed - add whichever items you want to monitor, follow the example provided in the file.
-
-Run it using docker compose:
-
-```bash
-docker compose up -d
-```
-
-For development, you should use `compose-dev.yml`:
+Use `compose-dev.yml`:
 
 ```bash
 docker compose -f compose-dev.yml up -d --build
 ```
 
-Open [http://localhost:8700/][http://localhost:8700/] (assuming you didn't override the port) to view the UI.
+Open [http://localhost:8700/](http://localhost:8700/) (assuming you didn't override the port) to view the UI.
 
-## Stand-alone
+### Stand-alone
 
-### Prerequisites
+#### Prerequisites
 
 * python 3.10+
 * pipenv
 
-### Install
+#### Install
 
 ```bash
 PIPENV_VENV_IN_PROJECT=true pipenv install
+cp items-example.json app/db/items.json
 ```
 
-### Set up tokens
+#### Set up notifier
 
-Any tokens (e.g. for telegram notifier) need to be placed in `.env` file in the `pricewatch` folder
+* For telegram notifier place tokens in `.env` file in the `pricewatch` folder (see above).
+* For demo notifier, modify `notify` function in `main.py` to use `demo_notifier` instead of `telegram_notifier`.
 
-e.g.:
+#### Run - price monitor
 
-```.env
-TELEGRAM_TOKEN=2223545336:AAAAAAAAAABBBBBBBBBCCCCCCCCCDDDDDDDD
-TELEGRAM_CHAT_ID=555555555
-```
-
-### Run
-
-Usage (__NB__: the example URL may not work anymore):
 ```bash
 $ PIPENV_VENV_IN_PROJECT=true pipenv shell 
 $ python main.py 
 ```
-You should see similar output:
+
+You should see similar output (if using demo notifier):
 
 ```
 [2023-10-22 08:04:21.745922] Checking HomeDepot screwdriver set...$29.97
@@ -85,14 +101,24 @@ Send to test@example.com
 -----
 ```
 
-You can also set up a cronjob to run periodically:
+> [!IMPORTANT]
+> The URL in `items-example.json` may not work anymore, delete it and replace with a different one.
+
+#### Run - UI
+To use the UI, run the following:
+
+```bash
+pipenv shell
+python -m app.ui.server
+```
+
+#### Run automatically
+You can set up a cronjob to run periodically
+
+Assumptions:
+* the full path to the directory is `/home/me/pricewatch`
+* `pipenv` is in `/usr/bin/pipenv` 
 
 ```
 0 */4 * * * cd /home/me/pricewatch && /usr/bin/pipenv run start >>log.txt 2>>error.txt
-```
-
-To use the UI, run the following (after running `pipenv shell`):
-
-```bash
-python -m app.ui.server
 ```
