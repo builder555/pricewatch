@@ -32,6 +32,23 @@ class SimpleWebServer(BaseHTTPRequestHandler):
         if isinstance(data_to_send, str):
             data_to_send = data_to_send.encode('utf-8')
         self.wfile.write(data_to_send)
+    
+    def do_PUT(self):
+        content_length = int(self.headers['Content-Length'])
+        put_data = self.rfile.read(content_length)
+        
+        data = json.loads(put_data)
+        
+        item_index = int(self.path.split('/')[-1])
+        items = get_items()
+        items[item_index].name = data['name']
+        items[item_index].url = data['url']
+        save_items(items)
+        
+        self.send_response(200)
+        self.end_headers()
+        response = bytes("Put request processed", 'utf-8')
+        self.wfile.write(response)
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
