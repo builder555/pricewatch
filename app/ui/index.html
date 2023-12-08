@@ -23,8 +23,23 @@
             display: flex;
             flex-wrap: wrap;
         }
-
-        .column {
+        .mt-1 {
+          margin-top: 0.8rem;
+        }
+        .p-1 {
+          padding-left: 0.3rem;
+          padding-right: 0.3rem;
+          padding-top: 0.2rem;
+          padding-bottom: 0.2rem;
+        }
+        .mr-0 {
+          margin-right: 0;
+        }
+        .alternate-row-colors:nth-child(odd) {
+            background-color: rgba(255,255,255,0.1);
+            border-radius:6px;
+        }
+      .column {
             flex: 1;
             flex-basis: 0;
             max-width: 100%;
@@ -35,7 +50,9 @@
             flex: 0 0 100%;
             max-width: 100%;
         }
-
+        .align-right {
+            text-align: right;
+        }
         /* Tablet */
         @media screen and (min-width: 768px) {
             .align-right-tablet {
@@ -76,19 +93,18 @@
             filter: brightness(1.2);
         }
         .danger {
-            color: hsl(348, 100%, 61%);
+          color: hsl(348, 100%, 61%);
         }
         .warning {
-            color: hsl(48, 100%, 67%);
+          color: hsl(48, 100%, 67%);
         }
         .info {
-            color: hsl(204, 86%, 53%);
+          color: hsl(204, 86%, 53%);
         }
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-        
         .loader {
           --spinner-size: 1rem;
           border: calc(var(--spinner-size) * 0.2) solid rgba(190, 190, 190, 0.5);
@@ -101,6 +117,17 @@
         }
         [role="button"] {
           display: inline-block;
+        }
+        input {
+          box-sizing: border-box;
+        }
+        .actions {
+          display:flex;
+          justify-content:flex-end;
+          align-items:center;
+        }
+        .actions > *:not(:last-child) {
+          margin-left: 0.5rem;
         }
     </style>
 </head>
@@ -116,21 +143,22 @@
                 >
             </div>
             <div class="column is-4 is-12-mobile align-right-tablet align-left-mobile">
-                <button @click="addItem">Add New Item</button>
+                <button @click="addItem" class="mr-0">Add New Item</button>
             </div>
         </div>
         <div class="loader" v-show="isProcessing"></div>
         <div
             v-for="(item, index) in filteredItems"
             :key="item.id"
-            class="columns"
+            class="columns alternate-row-colors p-1"
+            :style="item.isEditing ? { 'background-color': 'transparent' } : {}"
         >
-            <div class="column is-12-mobile is-8" v-show="!item.isEditing" >
+            <div class="column is-8" v-show="!item.isEditing">
                 <a :href="item.url" target="blank_">{{ item.name }}</a>
             </div>
-            <div class="column is-12-mobile is-4 align-left-mobile align-right-tablet" v-show="!item.isEditing" >
+            <div class="column is-4 align-right actions" v-show="!item.isEditing">
                 ${{ item.last_price }}
-                <a
+                <div
                   tabindex="0"
                   @click="modifyItem(index)"
                   role="button"
@@ -138,7 +166,7 @@
                   :disabled="item.isEditing || item.isProcessing"
                 >
                     <span class="material-symbols-outlined">stylus</span>
-                </a>
+                </div>
                 <div
                   tabindex="0"
                   @click="deleteItem(index)"
@@ -154,13 +182,14 @@
                   type="text"
                   v-model="item.name"
                   placeholder="Display Name"
+                  class="column is-12-mobile"
                 >
                 <input
                   type="url"
                   v-model="item.url"
-                  style="flex-grow:2"
                   placeholder="URL"
                   pattern="https://.*"
+                  class="column is-12-mobile"
                 >
                 <button
                   @click="saveItem(index)"
