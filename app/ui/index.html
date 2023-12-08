@@ -139,11 +139,12 @@
                   type="text"
                   placeholder="Search by name"
                   style="width:100%"
+                  :disabled="isAddingNewItem"
                   v-model="searchTerm"
                 >
             </div>
             <div class="column is-4 is-12-mobile align-right-tablet align-left-mobile">
-                <button @click="addItem" class="mr-0">Add New Item</button>
+                <button @click="addItem" class="mr-0":disabled="isAddingNewItem">Add New Item</button>
             </div>
         </div>
         <div class="loader" v-show="isProcessing"></div>
@@ -260,7 +261,7 @@
           setup() {
             const items = ref([]);
             const searchTerm = ref('');
-
+            const isAddingNewItem = computed(() => !items.value[0]?.isSaved);
             async function fetchAllItems() {
               try {
                 isProcessing.value = true;
@@ -286,6 +287,7 @@
             });
         
             const addItem = () => {
+              searchTerm.value = '';
               items.value.unshift({
                 name: '',
                 last_price: 0,
@@ -340,7 +342,7 @@
               }
             };
         
-            return { items, searchTerm, filteredItems, addItem, deleteItem, modifyItem, saveItem, cancelEdit };
+            return { items, searchTerm, filteredItems, addItem, deleteItem, modifyItem, saveItem, cancelEdit, isAddingNewItem };
           }
         }).mount('#app');
     </script>
