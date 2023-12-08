@@ -43,7 +43,7 @@ def fetch_price_from_api(subscription_key, sku):
     resp = r.json()
     return resp['skus'][0]['currentPrice']['value']
 
-def get_price(url):
+def get_price(url: str) -> float:
     r = requests.get(url, headers={'user-agent': random.choice(agents)}, timeout=10)
     subscription_key = extract_subscription_key(r.text)
     sku = url.split('.')[-2]

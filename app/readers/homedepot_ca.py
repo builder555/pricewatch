@@ -31,7 +31,7 @@ def try_to_extract_using_text_search(text: str) -> float:
     price_value = text[price_value_start:price_value_end]
     return float(price_value)
 
-def get_price(url):
+def get_price(url: str) -> float:
     headers = {
         'User-Agent': random.choice(agents), 
         'authority': 'www.homedepot.ca',

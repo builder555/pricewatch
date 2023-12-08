@@ -7,9 +7,6 @@ Usage:
 64.97
 ```
 
-In order to use the notifier in the main code, it needs to be imported in main.py and used in notify() function
-
-```python
-async def notify(msg: str):
-    await my_notifier.notify(msg)
-```
+To add your own, add a file to this directory, in which you:
+* implement a function with this definition: `def get_price(url: str) -> float`
+* add variable `SITE='www.yourstore.com'` with the base url of the website for this reader
