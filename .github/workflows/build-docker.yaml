@@ -24,7 +24,7 @@ jobs:
           fi
 
   build-and-push:
-    needs: ignore-readme-changes
+    needs: ignore-readme-only-changes
     if: needs.check-modified-files.outputs.run_build == 'true'
     runs-on: ubuntu-latest
     steps:
