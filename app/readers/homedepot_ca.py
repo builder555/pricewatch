@@ -18,7 +18,10 @@ agents = [
 def try_to_extract_using_bs(text: str) -> float:
     # sometimes doesn't work, depending on what HTML is returned
     soup = BeautifulSoup(text, 'html.parser')
-    price = soup.find("span", {"itemprop": "price"}).text
+    price_element = soup.find("span", {"itemprop": "price"})
+    if not price_element:
+        raise Exception('Could not find span with itemprop="price"')
+    price = price_element.text
     return float(price.strip().strip('$').strip())
 
 def try_to_extract_using_text_search(text: str) -> float: 
