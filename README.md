@@ -1,4 +1,4 @@
-# pricewatch
+# PriceWatch
 A way to monitor an item on a website and get notified of the price changes
 
 Add modules to `/readers` directory that can extract the price from a site. See `demo_store.py` as an example.
@@ -40,11 +40,13 @@ Add modules to `/readers` directory that can extract the price from a site. See 
     docker compose up -d
     ```
 
-5. Navigate to [http://localhost:8700](http://localhost:8700)
+5. Navigate to [http://localhost:8700](http://localhost:8700) to add/remove items to monitor.
 
 You should see a page that looks like this:
 
 ![screenshot](screenshot.png)
+
+As long as the container is running, it will check for price changes every 4 hours and send a telegram notification (assuming you have the proper token and chat id).
 
 ## Development
 
