@@ -2,7 +2,7 @@ import os
 import json
 from dataclasses import dataclass, asdict
 
-db_path = os.path.join(os.path.dirname(__file__), 'items.json')
+db_path = os.path.join(os.path.dirname(__file__), 'data/items.json')
 
 @dataclass
 class Item:

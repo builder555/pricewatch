@@ -18,12 +18,12 @@ Add modules to `/readers` directory that can extract the price from a site. See 
         env_file:
           - .env
         volumes:
-          - ./items.json:/app/app/db/items.json
+          - ./data/:/app/app/db/data/
         ports:
           - 8700:8700
     ```
 
-2. Save [items-example.json](./items-example.json) as `items.json` file in the same directory.
+2. Save [items-example.json](./items-example.json) as `items.json` file in the `data` directory (create one if it doesn't exist).
 
 3. Put tokens in `.env` file.
 
@@ -65,6 +65,18 @@ docker compose -f compose-dev.yml up -d --build
 
 Open [http://localhost:8700/](http://localhost:8700/) (assuming you didn't override the port) to view the UI.
 
+To build a local docker image:
+
+```bash
+docker build -t pricewatch .
+```
+
+Then modify the docker-compose.yml file to use it:
+
+```yaml
+    image: pricewatch:latest
+```
+
 ### Stand-alone
 
 #### Prerequisites
@@ -76,7 +88,7 @@ Open [http://localhost:8700/](http://localhost:8700/) (assuming you didn't overr
 
 ```bash
 PIPENV_VENV_IN_PROJECT=true pipenv install
-cp items-example.json app/db/items.json
+cp items-example.json app/db/data/items.json
 ```
 
 #### Set up notifier
