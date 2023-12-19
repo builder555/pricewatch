@@ -27,20 +27,11 @@ jobs:
 
   build-and-push:
     needs: ignore-readme-only-changes
-    if: needs.check-modified-files.outputs.run_build == 'true'
+    if: needs.ignore-readme-only-changes.outputs.run_build == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Check for README.md changes
-        id: readme_check
-        run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -v 'README.md'
-          then
-            echo "README_CHANGE=false" >> $GITHUB_ENV
-          else
-            echo "README_CHANGE=true" >> $GITHUB_ENV
-          fi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Log in to Docker Hub
