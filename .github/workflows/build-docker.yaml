@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
       - id: filter
         name: Check if README.md was updated
         run: |
