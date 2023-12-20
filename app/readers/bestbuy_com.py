@@ -18,7 +18,6 @@ cookie = 'intl_splash=false; intl_splash=false; ltc=%20; blue-assist-banner-show
 
 def get_price(url: str) -> float:
     agent = random.choice(agents)
-    print('using agent', agent)
     r = requests.get(url, headers={'User-Agent': agent, 'cookie': cookie }, timeout=10)
     html = r.text
     pattern = r'"price\\":(\d+\.\d+)'

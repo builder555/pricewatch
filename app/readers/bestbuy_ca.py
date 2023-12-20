@@ -16,7 +16,6 @@ agents = [
 
 def get_price(url: str) -> float:
     agent = random.choice(agents)
-    print('using agent', agent)
     r = requests.get(url, headers={'User-Agent': agent}, timeout=10)
     html = r.text
     pattern = r'"priceWithEhf":(\d+\.\d+)'
