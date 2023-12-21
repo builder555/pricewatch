@@ -144,7 +144,7 @@
                 >
             </div>
             <div class="column is-4 is-12-mobile align-right-tablet align-left-mobile">
-                <button @click="addItem" class="mr-0":disabled="isAddingNewItem">Add New Item</button>
+                <button @click="addItem" class="mr-0" :disabled="isAddingNewItem">Add New Item</button>
             </div>
         </div>
         <div class="loader" v-show="isProcessing"></div>
@@ -261,7 +261,7 @@
           setup() {
             const items = ref([]);
             const searchTerm = ref('');
-            const isAddingNewItem = computed(() => !items.value[0]?.isSaved);
+            const isAddingNewItem = computed(() => items.value?.length && !items?.value[0]?.isSaved);
             async function fetchAllItems() {
               try {
                 isProcessing.value = true;
@@ -300,11 +300,12 @@
             const deleteItem = async (index) => {
               if (confirm('Are you sure?')) {
                 try {
-                  items.value[index].isProcessing = true;
+                  item = items.value[index];
+                  item.isProcessing = true;
                   await apiDeleteItem(index);
                   items.value.splice(index, 1);
                 } catch (error) {
-                  items.value[index].isProcessing = false;
+                  item.isProcessing = false;
                   alert('Something went wrong. Check the server log.');
                 }
               }
@@ -328,6 +329,7 @@
                 }
                 item.isSaved = true;
                 item.isEditing = false;
+                item.isProcessing = false;
               } catch (error) {
                 item.isProcessing = false;
                 alert('Something went wrong. Check the server log.');
