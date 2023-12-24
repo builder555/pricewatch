@@ -1,2 +1,2 @@
-async def notify(msg: str, email: str):
-    print(f'Demo notifier: \n{msg}\n\nSend to {email}\n-----')
+async def notify(msg: str):
+    print(f'Demo notifier: \n{msg}\n\n-----')
