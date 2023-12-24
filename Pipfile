@@ -10,6 +10,8 @@ python-telegram-bot = "*"
 
 [dev-packages]
 pytest = "*"
+pytest-watch = "*"
+black = "*"
 
 [requires]
 python_version = "3"
@@ -20,3 +22,5 @@ allow_prereleases = true
 [scripts]
 "start" = "python main.py"
 "test" = "pytest -v"
+"test-watch" = "ptw --runner='pytest -v'"
+"format" = "black ."
