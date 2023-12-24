@@ -6,6 +6,10 @@ class PriceExtractor(Protocol):
     def __call__(self, url: str) -> float:
         ...
 
+class SiteNotSupported(Exception):
+    def __init__(self, site: str):
+        super().__init__(f'Site {site} is not supported yet.')
+
 class Modules:
     def __init__(self):
         self.modules = []
@@ -26,7 +30,7 @@ class Modules:
 def get_price_extractor(site: str) -> PriceExtractor:
     module = Modules()[site]
     if module is None:
-        raise KeyError(f"No reader found for site '{site}'")
+        raise SiteNotSupported(site)
     return module.get_price
 
 def get_price(url: str) -> float:
@@ -41,6 +45,8 @@ def get_item_price_with_retries(url: str, max_retires: int = 10) -> float:
         try:
             price = get_price(url)
             break
+        except SiteNotSupported:
+            raise
         except Exception as e:
             exception = e
             retries -= 1

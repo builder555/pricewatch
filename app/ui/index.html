@@ -332,7 +332,7 @@
                 item.isProcessing = false;
               } catch (error) {
                 item.isProcessing = false;
-                alert('Something went wrong. Check the server log.');
+                alert(`Something went wrong: ${error.message}`);
               }
             };
         
