@@ -12,6 +12,7 @@ class Item:
     @property
     def __dict__(self):
         return asdict(self)
+
 class ItemJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if hasattr(o, '__dict__'):

@@ -19,3 +19,4 @@ allow_prereleases = true
 
 [scripts]
 "start" = "python main.py"
+"test" = "pytest -v"
