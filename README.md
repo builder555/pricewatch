@@ -111,7 +111,6 @@ Price has changed!
 Demo notifier: 
 Price has changed for HomeDepot screwdriver set from $9999 to $29.97. Check it out: https://www.homedepot.com/p/Husky-Screwdriver-Set-15-Piece-246340150/204663546
 
-Send to test@example.com
 -----
 ```
 
