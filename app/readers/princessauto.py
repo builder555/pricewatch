@@ -14,8 +14,6 @@ agents = [
         'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
     ]
 
-# cookie = 'intl_splash=false; intl_splash=false; ltc=%20; blue-assist-banner-shown=true; dtSa=-'
-
 def get_price(url: str) -> float:
     agent = random.choice(agents)
     r = requests.get(url, headers={'User-Agent': agent }, timeout=10)
