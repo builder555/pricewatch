@@ -6,6 +6,10 @@ Add modules to `/readers` directory that can extract the price from a site. See 
 > [!CAUTION]
 > **NB:** FOR PERSONAL USE ONLY! THIS IS NOT SECURE FOR A PRODUCTION SYSTEM!
 
+Which websites are supported?
+
+Each supported website has a corresponding [reader](/app/readers)
+
 ## Running
 
 1. Create a `docker-compose.yaml` file:
