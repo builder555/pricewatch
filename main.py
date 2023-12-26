@@ -29,9 +29,11 @@ async def main():
         sleep(2)
         if price != item.last_price:
             print("Price has changed!")
-            msg = f"Price has changed for {item.name} " + \
-                  f"from ${item.last_price} to ${price}. " + \
-                  f"Check it out: {item.url}"
+            msg = (
+                f"Price has changed for {item.name} "
+                + f"from ${item.last_price} to ${price}. "
+                + f"Check it out: {item.url}"
+            )
             await notify(msg)
             item.last_price = price
             item_service.update_item(index, item)
