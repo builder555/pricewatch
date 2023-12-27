@@ -1,5 +1,5 @@
 import random
-import requests
+import httpx
 from bs4 import BeautifulSoup
 
 SITE = "www.petvalu.ca"
@@ -16,9 +16,9 @@ agents = [
 ]
 
 
-def get_price(url: str) -> float:
-    r = requests.get(url, headers={"User-Agent": random.choice(agents)}, timeout=10)
+def get_price(url: str, client: httpx.Client) -> float:
+    r = client.get(url, headers={"User-Agent": random.choice(agents)}, timeout=10)
     html = r.text
     soup = BeautifulSoup(html, "html.parser")
     price = soup.find("span", {"class": "price"}).text
-    return int(price.strip().strip("$").strip().split(".")[0])
+    return float(price.strip().strip("$").strip())

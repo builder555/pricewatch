@@ -1,5 +1,5 @@
 import random
-import requests
+import httpx
 from bs4 import BeautifulSoup
 
 SITE = "www.homedepot.ca"
@@ -37,7 +37,7 @@ def try_to_extract_using_text_search(text: str) -> float:
     return float(price_value)
 
 
-def get_price(url: str) -> float:
+def get_price(url: str, client: httpx.Client) -> float:
     headers = {
         "User-Agent": random.choice(agents),
         "authority": "www.homedepot.ca",
@@ -45,7 +45,7 @@ def get_price(url: str) -> float:
         "dnt": "1",
         "sec-ch-ua": '"Not_A Brand";v="99", "Brave";v="109", "Chromium";v="109"',
     }
-    r = requests.get(url, headers=headers, timeout=10)
+    r = client.get(url, headers=headers, timeout=10)
     try:
         return try_to_extract_using_bs(r.text)
     except:

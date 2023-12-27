@@ -8,14 +8,16 @@ from typing import Union
 
 def fetch_price_and_add_item(name: str, url: str):
     price = get_item_price_with_retries(url)
-    item_service.add_item(Item(name, url, price))
+    i = Item(name=name, url=url)
+    i.price = price
+    item_service.add_item(i)
 
 
 def update_item_and_fetch_price(item_index: int, name: str, url: str):
     items = item_service.get_items()
     item = items[item_index]
     if item.url != url:
-        item.last_price = get_item_price_with_retries(url)
+        item.price = get_item_price_with_retries(url)
     item.name = name
     item.url = url
     item_service.update_item(item_index, item)

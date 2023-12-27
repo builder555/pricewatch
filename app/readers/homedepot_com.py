@@ -1,5 +1,5 @@
 import random
-import requests
+import httpx
 
 SITE = "www.homedepot.com"
 
@@ -15,12 +15,12 @@ agents = [
 ]
 
 
-def get_price(url: str) -> float:
+def get_price(url: str, client: httpx.Client) -> float:
     headers = {
         "User-Agent": random.choice(agents),
         "authority": "www.homedepot.com",
     }
-    r = requests.get(url, headers=headers, timeout=10)
+    r = client.get(url, headers=headers, timeout=10)
     text = r.text
     price_group_start = text.find('"price"')
     price_group_end = text.find(",", price_group_start)

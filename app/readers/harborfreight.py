@@ -1,5 +1,5 @@
 import random
-import requests
+import httpx
 
 SITE = "www.harborfreight.com"
 
@@ -15,11 +15,11 @@ agents = [
 ]
 
 
-def get_price(url: str) -> float:
+def get_price(url: str, client: httpx.Client) -> float:
     headers = {
         "User-Agent": random.choice(agents),
     }
-    r = requests.get(url, headers=headers, timeout=10)
+    r = client.get(url, headers=headers, timeout=10)
     text = r.text
     price_area_start = text.find("priceCurrency")
     price_line_start = text.find("price", price_area_start + 2)

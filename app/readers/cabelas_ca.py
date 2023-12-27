@@ -1,5 +1,5 @@
 import random
-import requests
+import httpx
 import re
 
 SITE = "www.cabelas.ca"
@@ -15,9 +15,9 @@ agents = [
 ]
 
 
-def get_price(url: str) -> float:
+def get_price(url: str, client: httpx.Client) -> float:
     agent = random.choice(agents)
-    r = requests.get(url, headers={"User-Agent": agent}, timeout=10)
+    r = client.get(url, headers={"User-Agent": agent}, timeout=10)
     html = r.text
     pattern = r"price: (\d+\.\d+)"
     matches = re.findall(pattern, html)

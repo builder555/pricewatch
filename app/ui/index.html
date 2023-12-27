@@ -26,6 +26,12 @@
         .mt-1 {
           margin-top: 0.8rem;
         }
+        .p-0 {
+          padding: 0;
+        }
+        .m-0 {
+          margin: 0;
+        }
         .p-1 {
           padding-left: 0.3rem;
           padding-right: 0.3rem;
@@ -155,10 +161,11 @@
             :style="item.isEditing ? { 'background-color': 'transparent' } : {}"
         >
             <div class="column is-8" v-show="!item.isEditing">
-                <a :href="item.url" target="blank_">{{ item.name }}</a>
+                <a :href="item.url" target="blank_">{{ item.name }}</a><br>
+                <h6 class="p-0 m-0">Last price fetched: {{ item.prices[item.prices.length - 1][0] }}</h6>
             </div>
             <div class="column is-4 align-right actions" v-show="!item.isEditing">
-                ${{ item.last_price }}
+                ${{ item.prices[item.prices.length - 1][1] }}
                 <div
                   tabindex="0"
                   @click="modifyItem(index)"
@@ -290,7 +297,6 @@
               searchTerm.value = '';
               items.value.unshift({
                 name: '',
-                last_price: 0,
                 url: '',
                 isSaved: false,
                 isEditing: true
@@ -321,12 +327,12 @@
               item.isProcessing = true;
               try {
                 if (!item.isSaved) {
-                  const id = await apiAddItem({ name, url });
-                  await fetchAllItems();
+                  await apiAddItem({ name, url });
                 }
                 else {
                   await apiUpdateItem(index, { name, url });
                 }
+                await fetchAllItems();
                 item.isSaved = true;
                 item.isEditing = false;
                 item.isProcessing = false;
@@ -343,8 +349,22 @@
                 items.value[index].isEditing = false;
               }
             };
+            const isoToLocalDate = (isoDate) => {
+              const date = new Date(isoDate);
+              return date.toLocaleDateString();
+            };
         
-            return { items, searchTerm, filteredItems, addItem, deleteItem, modifyItem, saveItem, cancelEdit, isAddingNewItem };
+            return { 
+              addItem,
+              cancelEdit,
+              deleteItem,
+              filteredItems,
+              isAddingNewItem,
+              items,
+              modifyItem,
+              saveItem,
+              searchTerm,
+            };
           }
         }).mount('#app');
     </script>

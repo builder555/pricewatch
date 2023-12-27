@@ -1,6 +1,6 @@
 import random
-import requests
 import re
+import httpx
 
 SITE = "www.bestbuy.com"
 
@@ -17,9 +17,9 @@ agents = [
 cookie = "intl_splash=false; intl_splash=false; ltc=%20; blue-assist-banner-shown=true; dtSa=-"
 
 
-def get_price(url: str) -> float:
+def get_price(url: str, client: httpx.Client) -> float:
     agent = random.choice(agents)
-    r = requests.get(url, headers={"User-Agent": agent, "cookie": cookie}, timeout=10)
+    r = client.get(url, headers={"User-Agent": agent, "cookie": cookie}, timeout=10)
     html = r.text
     pattern = r'"price\\":(\d+\.\d+)'
     matches = re.findall(pattern, html)

@@ -6,8 +6,16 @@ from .dataclasses import Item
 @pytest.fixture
 def fake_items():
     return [
-        {"name": "Item1", "url": "http://example.com", "last_price": 100.0},
-        {"name": "Item2", "url": "http://example.org", "last_price": 200.0},
+        {
+            "name": "Item1",
+            "url": "http://example.com",
+            "prices": [("2021-10-15T13:00:12", 15.0)],
+        },
+        {
+            "name": "Item2",
+            "url": "http://example.org",
+            "prices": [("2021-10-15T13:00:12", 12.0)],
+        },
     ]
 
 
@@ -35,27 +43,25 @@ def test_get_items(service, fake_items):
     items = service.get_items()
     assert len(items) == 2
     for i in range(len(items)):
-        assert items[i].name == fake_items[i]["name"]
-        assert items[i].url == fake_items[i]["url"]
-        assert items[i].last_price == fake_items[i]["last_price"]
+        assert items[i].__dict__ == fake_items[i]
 
 
 def test_add_item(service):
     items_before_insert = service.get_items()
-    new_item = Item(name="Item3", url="http://example.net", last_price=300.0)
+    new_item = Item(name="Item3", url="http://example.net")
     service.add_item(new_item)
     items_after_insert = service.get_items()
     assert len(items_after_insert) == len(items_before_insert) + 1
     assert items_after_insert[-1] == new_item
 
 
-def test_passing_wrong_type_raises_exception(service):
+def test_adding_wrong_item_type_raises_exception(service):
     with pytest.raises(TypeError):
         service.add_item("not an Item")  # type: ignore
 
 
 def test_update_item(service):
-    new_item = Item(name="Item123Random", url="http://example.net", last_price=300.0)
+    new_item = Item(name="Item123Random", url="http://example.net")
     service.update_item(0, new_item)
     items = service.get_items()
     assert items[0] == new_item

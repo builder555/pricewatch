@@ -1,10 +1,11 @@
 from pathlib import Path
 import importlib
-from typing import Protocol
+from typing import Protocol, Optional
+import httpx
 
 
 class PriceExtractor(Protocol):
-    def __call__(self, url: str) -> float: ...
+    def __call__(self, url: str, client: httpx.Client) -> float: ...
 
 
 class SiteNotSupported(Exception):
@@ -38,18 +39,22 @@ def get_price_extractor(site: str) -> PriceExtractor:
     return module.get_price
 
 
-def get_price(url: str) -> float:
+def get_price(url: str, client: Optional[httpx.Client]) -> float:
+    if client is None:
+        client = httpx.Client()
     kind = url.split("/")[2]
     extract_price = get_price_extractor(kind)
-    return extract_price(url)
+    return extract_price(url, client)
 
 
-def get_item_price_with_retries(url: str, max_retires: int = 10) -> float:
+def get_item_price_with_retries(
+    url: str, max_retires: int = 10, client: Optional[httpx.Client] = None
+) -> float:
     retries = max_retires
     exception = Exception("error")
     while retries > 0:
         try:
-            price = get_price(url)
+            price = get_price(url, client)
             break
         except SiteNotSupported:
             raise
