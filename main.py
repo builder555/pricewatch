@@ -37,8 +37,8 @@ async def main():
                     + f"Check it out: {item.url}"
                 )
                 await notify(msg)
-                item.price = price
-                item_service.update_item(index, item)
+            item.price = price
+            item_service.update_item(index, item)
 
 
 if __name__ == "__main__":
