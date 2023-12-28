@@ -29,5 +29,5 @@ class Item:
 
     @price.setter
     def price(self, value: float):
-        timestamp = datetime.now().replace(microsecond=0).isoformat()
+        timestamp = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
         self.prices.append((timestamp, value))
