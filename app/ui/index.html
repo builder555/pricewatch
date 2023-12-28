@@ -160,11 +160,11 @@
             class="columns alternate-row-colors p-1"
             :style="item.isEditing ? { 'background-color': 'transparent' } : {}"
         >
-            <div class="column is-8" v-show="!item.isEditing">
+            <div class="column is-8" v-if="!item.isEditing">
                 <a :href="item.url" target="blank_">{{ item.name }}</a><br>
-                <h6 class="p-0 m-0">Last price fetched: {{ item.prices[item.prices.length - 1][0] }}</h6>
+                <h6 class="p-0 m-0">Last price fetched: {{ utcToLocal(item.prices[item.prices.length - 1][0]) }}</h6>
             </div>
-            <div class="column is-4 align-right actions" v-show="!item.isEditing">
+            <div class="column is-4 align-right actions" v-if="!item.isEditing">
                 ${{ item.prices[item.prices.length - 1][1] }}
                 <div
                   tabindex="0"
@@ -266,6 +266,17 @@
         };
         createApp({
           setup() {
+            const utcToLocal = (utcTimestamp) => {
+              const date = new Date(utcTimestamp);
+              const pad = (num) => num.toString().padStart(2, '0');
+              const year = date.getFullYear();
+              const month = pad(date.getMonth() + 1);
+              const day = pad(date.getDate());
+              const hours = pad(date.getHours());
+              const minutes = pad(date.getMinutes());
+              const seconds = pad(date.getSeconds());
+              return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            };
             const items = ref([]);
             const searchTerm = ref('');
             const isAddingNewItem = computed(() => items.value?.length && !items?.value[0]?.isSaved);
@@ -357,6 +368,7 @@
             return { 
               addItem,
               cancelEdit,
+              utcToLocal,
               deleteItem,
               filteredItems,
               isAddingNewItem,
