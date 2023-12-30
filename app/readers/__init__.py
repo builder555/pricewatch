@@ -39,12 +39,16 @@ def get_price_extractor(site: str) -> PriceExtractor:
     return module.get_price
 
 
-def get_price(url: str, client: Optional[httpx.Client]) -> float:
-    if client is None:
+def get_price(url: str, client: Optional[httpx.Client] = None) -> float:
+    no_client = client is None
+    if no_client:
         client = httpx.Client()
     kind = url.split("/")[2]
     extract_price = get_price_extractor(kind)
-    return extract_price(url, client)
+    price = extract_price(url, client)
+    if no_client:
+        client.close()
+    return price
 
 
 def get_item_price_with_retries(
