@@ -1,9 +1,11 @@
+from urllib.parse import urlparse
 import random
 import httpx
 from bs4 import BeautifulSoup
 from .__agents import agents
 
 SITE = "www.homedepot.ca"
+
 
 
 def try_to_extract_using_bs(text: str) -> float:
@@ -26,6 +28,23 @@ def try_to_extract_using_text_search(text: str) -> float:
     price_value = text[price_value_start:price_value_end]
     return float(price_value)
 
+def extract_product_id(url: str) -> str:
+    parsed_url = urlparse(url)
+    last_segment = parsed_url.path.split('/')[-1]
+    return last_segment
+
+def try_to_extract_json(url: str, client: httpx.Client) -> float:
+    headers = {
+        "accept": "application/json, text/javascript, */*",
+        "user-agent": random.choice(agents),
+        "referer": url,
+    }
+    store_id = 7174
+    product_id = extract_product_id(url)
+    json_url = f"https://www.homedepot.ca/api/productsvc/v1/products/{product_id}/store/{store_id}?fields=BASIC_SPA&lang=en"
+    r = client.get(json_url, headers=headers, timeout=10)
+    jsn = r.json()
+    return jsn['optimizedPrice']['displayPrice']['value']
 
 def get_price(url: str, client: httpx.Client) -> float:
     headers = {
@@ -36,7 +55,13 @@ def get_price(url: str, client: httpx.Client) -> float:
         "sec-ch-ua": '"Not_A Brand";v="99", "Brave";v="109", "Chromium";v="109"',
     }
     r = client.get(url, headers=headers, timeout=10)
+    price = 0
     try:
-        return try_to_extract_using_bs(r.text)
+        price = try_to_extract_using_bs(r.text)
     except:
-        return try_to_extract_using_text_search(r.text)
+        price = try_to_extract_using_text_search(r.text)
+    try:
+        if price < 0.01:
+            price = try_to_extract_json(url, client)
+    finally:
+        return price
