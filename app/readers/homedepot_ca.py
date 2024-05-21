@@ -7,7 +7,6 @@ from .__agents import agents
 SITE = "www.homedepot.ca"
 
 
-
 def try_to_extract_using_bs(text: str) -> float:
     # sometimes doesn't work, depending on what HTML is returned
     soup = BeautifulSoup(text, "html.parser")
@@ -28,10 +27,12 @@ def try_to_extract_using_text_search(text: str) -> float:
     price_value = text[price_value_start:price_value_end]
     return float(price_value)
 
+
 def extract_product_id(url: str) -> str:
     parsed_url = urlparse(url)
-    last_segment = parsed_url.path.split('/')[-1]
+    last_segment = parsed_url.path.split("/")[-1]
     return last_segment
+
 
 def try_to_extract_json(url: str, client: httpx.Client) -> float:
     headers = {
@@ -44,7 +45,8 @@ def try_to_extract_json(url: str, client: httpx.Client) -> float:
     json_url = f"https://www.homedepot.ca/api/productsvc/v1/products/{product_id}/store/{store_id}?fields=BASIC_SPA&lang=en"
     r = client.get(json_url, headers=headers, timeout=10)
     jsn = r.json()
-    return jsn['optimizedPrice']['displayPrice']['value']
+    return jsn["optimizedPrice"]["displayPrice"]["value"]
+
 
 def get_price(url: str, client: httpx.Client) -> float:
     headers = {
@@ -55,19 +57,19 @@ def get_price(url: str, client: httpx.Client) -> float:
         "sec-ch-ua": '"Not_A Brand";v="99", "Brave";v="109", "Chromium";v="109"',
     }
     r = client.get(url, headers=headers, timeout=10)
-    
+
     price_extractors = (
-        (try_to_extract_using_bs,r.text),
-        (try_to_extract_using_text_search,r.text),
-        (try_to_extract_json, url, client)
+        (try_to_extract_using_bs, r.text),
+        (try_to_extract_using_text_search, r.text),
+        (try_to_extract_json, url, client),
     )
     price = 0.0
     for extractor in price_extractors:
         get_price_function, *args = extractor
         try:
-            price = get_price_function(*args) # type: ignore
+            price = get_price_function(*args)  # type: ignore
         finally:
             pass
         if price > 0.0:
             return price
-    raise ValueError('Could not extract price')
+    raise ValueError("Could not extract price")
