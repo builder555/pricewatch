@@ -55,6 +55,7 @@ def get_price(url: str, client: httpx.Client) -> float:
         "sec-ch-ua": '"Not_A Brand";v="99", "Brave";v="109", "Chromium";v="109"',
     }
     r = client.get(url, headers=headers, timeout=10)
+    
     price_extractors = (
         (try_to_extract_using_bs,r.text),
         (try_to_extract_using_text_search,r.text),
@@ -65,7 +66,7 @@ def get_price(url: str, client: httpx.Client) -> float:
         get_price_function, *args = extractor
         try:
             price = get_price_function(*args) # type: ignore
-        except:
+        finally:
             pass
         if price > 0.0:
             return price
