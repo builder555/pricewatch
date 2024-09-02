@@ -34,9 +34,20 @@ def fetch_price_from_api(subscription_key: str, sku: str, client: httpx.Client):
     resp = r.json()
     return resp["skus"][0]["currentPrice"]["value"]
 
+def extract_number(url):
+    string_with_sku = url.split('/')[-1].split(".")[-2]
+    number = ""
+    found_digits = False
+    for char in string_with_sku[::-1]:
+        found_digits = found_digits or char.isdigit()
+        if char.isdigit():
+            number = char + number
+        elif found_digits:
+            break
+    return number
 
 def get_price(url: str, client: httpx.Client) -> float:
     r = client.get(url, headers={"user-agent": random.choice(agents)}, timeout=10)
     subscription_key = extract_subscription_key(r.text)
-    sku = url.split(".")[-2]
+    sku = extract_number(url)
     return fetch_price_from_api(subscription_key, sku, client)
