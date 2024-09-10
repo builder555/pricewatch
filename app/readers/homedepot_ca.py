@@ -68,6 +68,8 @@ def get_price(url: str, client: httpx.Client) -> float:
         get_price_function, *args = extractor
         try:
             price = get_price_function(*args)  # type: ignore
+        except Exception:
+            pass
         finally:
             pass
         if price > 0.0:
