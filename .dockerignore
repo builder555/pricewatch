@@ -12,6 +12,8 @@
 **/.env
 **/.git
 **/.gitignore
+**/.github
+**/.pytest_cache
 **/.project
 **/.settings
 **/.toolstarget
