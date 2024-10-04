@@ -162,7 +162,7 @@
         >
             <div class="column is-8" v-if="!item.isEditing">
                 <a :href="item.url" target="blank_">{{ item.name }}</a><br>
-                <h6 class="p-0 m-0">Last price fetched: {{ utcToLocal(item.prices[item.prices.length - 1][0]) }}</h6>
+                <h6 class="p-0 m-0" :class="{'warning': isTooOld(item.lastFetchDate)}">Last price fetched: {{ utcToLocal(item.lastFetchDate) }}</h6>
             </div>
             <div class="column is-4 align-right actions" v-if="!item.isEditing">
                 ${{ item.prices[item.prices.length - 1][1] }}
@@ -277,6 +277,13 @@
               const seconds = pad(date.getSeconds());
               return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
             };
+            
+            const latestDate = ref(new Date(0));
+
+            const isTooOld = (itemFetchDate) => {
+              return new Date(latestDate.value).getTime() - new Date(itemFetchDate).getTime() > 600000;
+            };
+
             const items = ref([]);
             const searchTerm = ref('');
             const isAddingNewItem = computed(() => items.value?.length && !items?.value[0]?.isSaved);
@@ -284,12 +291,17 @@
               try {
                 isProcessing.value = true;
                 const fetchedItems = await apiGetItems();
-                items.value = fetchedItems.map(item => ({
+                items.value = fetchedItems.map(item => {
+                  const date = new Date(item.prices[item.prices.length - 1][0]);
+                  if (date > latestDate.value) latestDate.value = date;
+                  return {
                     ...item,
                     isSaved: true,
                     isEditing: false,
                     isProcessing: false,
-                }));
+                    lastFetchDate: item.prices[item.prices.length - 1][0],
+                  }
+                });
               } catch (error) {
                 alert('Something went wrong when loading items. Check the server log.');
                 isProcessing.value = false;
@@ -368,14 +380,16 @@
             return { 
               addItem,
               cancelEdit,
-              utcToLocal,
               deleteItem,
               filteredItems,
               isAddingNewItem,
+              isTooOld,
               items,
+              latestDate,
               modifyItem,
               saveItem,
               searchTerm,
+              utcToLocal,
             };
           }
         }).mount('#app');
