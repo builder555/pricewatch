@@ -8,7 +8,7 @@ SITE = "www.canadacomputers.com"
 
 def get_price(url: str, client: httpx.Client) -> float:
     agent = random.choice(agents)
-    r = client.get(url, headers={"User-Agent": agent}, timeout=10)
+    r = client.get(url, headers={"User-Agent": agent}, timeout=10, follow_redirects=True)
     html = r.text
     pattern = r"price\"*\s*:\s*\"*(\d+\.\d+)"
     matches = re.findall(pattern, html)

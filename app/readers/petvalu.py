@@ -7,7 +7,7 @@ SITE = "www.petvalu.ca"
 
 
 def get_price(url: str, client: httpx.Client) -> float:
-    r = client.get(url, headers={"User-Agent": random.choice(agents)}, timeout=10)
+    r = client.get(url, headers={"User-Agent": random.choice(agents)}, timeout=10, follow_redirects=True)
     html = r.text
     soup = BeautifulSoup(html, "html.parser")
     price = soup.find("div", {"class": "price"}).text
