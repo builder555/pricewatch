@@ -60,8 +60,6 @@ def get_price(url: str, client: httpx.Client) -> float:
 
     price_extractors = (
         (try_to_extract_json, url, client),
-        (try_to_extract_using_bs, r.text),
-        (try_to_extract_using_text_search, r.text),
     )
     price = 0.0
     for extractor in price_extractors:
