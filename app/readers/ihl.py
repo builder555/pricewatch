@@ -10,5 +10,8 @@ def get_price(url: str, client: httpx.Client) -> float:
     r = client.get(url, headers={"User-Agent": random.choice(agents)}, timeout=10)
     html = r.text
     soup = BeautifulSoup(html, "html.parser")
-    price = soup.find("span", {"class": "lbl-price"}).text
-    return float(price.strip().strip("$").strip())
+    tag = soup.find('meta', property='product:price:amount')
+    if tag:
+        price = tag['content'] # type: ignore
+        return float(price.strip().strip("$").strip()) # type: ignore
+    raise ValueError("Could not extract price")
