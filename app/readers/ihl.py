@@ -3,7 +3,7 @@ import httpx
 from bs4 import BeautifulSoup
 from .__agents import agents
 
-SITE = "www.ihlcanada.com"
+SITE = "ihlcanada.com"
 
 
 def get_price(url: str, client: httpx.Client) -> float:
