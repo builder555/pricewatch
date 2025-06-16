@@ -25,7 +25,11 @@ def extract_using_pattern(html: str, pattern: str) -> float | None:
 
 def get_price(url: str, client: httpx.Client) -> float:
     agent = random.choice(agents)
-    r = client.get(url, headers={"user-agent": agent}, timeout=5)
+    r = client.get(url, headers={
+        "sec-ch-ua": '"Brave";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "user-agent": agent,
+    }, timeout=5)
     html = r.text
     patterns = [
         r"priceMin\s*:\s*'(\d+\.\d+)'",
