@@ -28,9 +28,9 @@ def get_price(url: str, client: httpx.Client) -> float:
     r = client.get(url, headers={"user-agent": agent}, timeout=5)
     html = r.text
     patterns = [
-        r"priceMin: '(\d+\.\d+)'",
-        r"price: (\d+\.\d+)",
-        r"price: '([A-Za-z0-9+/=]+)'",
+        r"priceMin\s*:\s*'(\d+\.\d+)'",
+        r"price\s*:\s*(\d+\.\d+)",
+        r"price\s*:\s*'([A-Za-z0-9+/=]+)'",
     ]
     for pattern in patterns:
         price = extract_using_pattern(html, pattern)
