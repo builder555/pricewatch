@@ -71,8 +71,8 @@ def test_setting_price_adds_it_to_history():
         mock_datetime.now.return_value = datetime(2021, 10, 15, 15, 0, 19)
         item.price = 8.99
         assert item.prices == [
-            ("2021-10-15T13:00:19", 10.0),
-            ("2021-10-15T15:00:19", 8.99),
+            ("2021-10-15T13:00:19Z", 10.0),
+            ("2021-10-15T15:00:19Z", 8.99),
         ]
 
 
