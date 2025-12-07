@@ -8,6 +8,7 @@ beautifulsoup4 = "*"
 requests = "*"
 python-telegram-bot = "*"
 httpx = "*"
+selenium = "*"
 
 [dev-packages]
 pytest = "*"

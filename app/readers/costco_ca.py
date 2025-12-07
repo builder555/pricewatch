@@ -1,8 +1,10 @@
-import random
 import httpx
 import re
-from .__agents import agents
 import base64
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
+from time import sleep
 
 SITE = "www.costco.ca"
 
@@ -24,20 +26,22 @@ def extract_using_pattern(html: str, pattern: str) -> float | None:
 
 
 def get_price(url: str, client: httpx.Client) -> float:
-    agent = random.choice(agents)
-    r = client.get(url, headers={
-        "sec-ch-ua": '"Brave";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
-        "sec-ch-ua-mobile": "?0",
-        "user-agent": agent,
-    }, timeout=5)
-    html = r.text
-    patterns = [
-        r"priceMin\s*:\s*'(\d+\.\d+)'",
-        r"price\s*:\s*(\d+\.\d+)",
-        r"price\s*:\s*'([A-Za-z0-9+/=]+)'",
-    ]
-    for pattern in patterns:
-        price = extract_using_pattern(html, pattern)
-        if price is not None:
-            return price
+    ops = Options()
+    ops.add_argument("--headless")
+    dr = webdriver.Firefox(options=ops)
+    attempts = 10
+    dr.get(url)
+    while attempts > 0:
+        try:
+            el = dr.find_element(By.XPATH, "//*[@automation-id='productPriceOutput']")
+            price = float(el.text.replace("$", ""))
+            break
+        except Exception:
+            sleep(1)
+            attempts -= 1
+    else:
+        raise Exception("Price not found")
+    dr.quit()
+    if price is not None:
+        return price
     raise Exception("Price not found")
