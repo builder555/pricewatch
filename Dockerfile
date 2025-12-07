@@ -9,7 +9,7 @@ WORKDIR /app
 COPY . .
 
 RUN apk update \
-    && apk add --no-cache cronie \
+    && apk add --no-cache cronie firefox \
     && python -m pip install beautifulsoup4 requests python-telegram-bot selenium \
     && mkdir -p /app/app/db/data
 
