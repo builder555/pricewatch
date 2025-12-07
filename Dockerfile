@@ -10,7 +10,7 @@ COPY . .
 
 RUN apk update \
     && apk add --no-cache cronie \
-    && python -m pip install beautifulsoup4 requests python-telegram-bot \
+    && python -m pip install beautifulsoup4 requests python-telegram-bot selenium \
     && mkdir -p /app/app/db/data
 
 RUN echo "0 */4 * * * . /etc/environment; cd /app && /usr/local/bin/python main.py >> /tmp/pricelog.txt 2>&1" | crontab -

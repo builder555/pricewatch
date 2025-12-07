@@ -40,7 +40,7 @@ jobs:
           username: builder555
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Build and push multi-platform Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: builder555/pricewatch:latest
