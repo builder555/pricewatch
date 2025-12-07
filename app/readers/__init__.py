@@ -47,7 +47,7 @@ def get_price(url: str, client: Optional[httpx.Client] = None) -> float:
     extract_price = get_price_extractor(kind)
     price = extract_price(url, client)
     if should_create_local_client:
-        client.close() # type: ignore
+        client.close()  # type: ignore
     return price
 
 
