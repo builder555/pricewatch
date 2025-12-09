@@ -28,6 +28,7 @@ def extract_using_pattern(html: str, pattern: str) -> float | None:
 def get_price(url: str, client: httpx.Client) -> float:
     ops = Options()
     ops.add_argument("--headless")
+    ops.binary_location = '/usr/bin/firefox-esr'
     dr = webdriver.Firefox(options=ops)
     attempts = 10
     dr.get(url)
