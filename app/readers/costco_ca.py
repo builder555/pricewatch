@@ -30,19 +30,20 @@ def get_price(url: str, client: httpx.Client) -> float:
     ops.add_argument("--headless")
     ops.binary_location = '/usr/bin/firefox-esr'
     dr = webdriver.Firefox(options=ops)
-    attempts = 10
-    dr.get(url)
-    while attempts > 0:
-        try:
-            el = dr.find_element(By.XPATH, "//*[@automation-id='productPriceOutput']")
-            price = float(el.text.replace("$", ""))
-            break
-        except Exception:
-            sleep(1)
-            attempts -= 1
-    else:
+    price = None
+    try:
+        attempts = 10
+        dr.get(url)
+        while attempts > 0:
+            try:
+                el = dr.find_element(By.XPATH, "//*[@automation-id='productPriceOutput']")
+                price = float(el.text.replace("$", ""))
+                break
+            except Exception:
+                sleep(1)
+                attempts -= 1
+    finally:
+        dr.quit()
+    if price is None:
         raise Exception("Price not found")
-    dr.quit()
-    if price is not None:
-        return price
-    raise Exception("Price not found")
+    return price
