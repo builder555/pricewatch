@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 ENV PYTHONUNBUFFERED=1
 
-RUN pip install uv
+RUN pip install uv==0.11.23
 
 WORKDIR /app
 
