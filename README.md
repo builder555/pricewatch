@@ -61,6 +61,17 @@ cd pricewatch
 
 ### Docker
 
+The image installs dependencies from `requirements.txt`, which is generated from
+`uv.lock` (uv has no `linux/arm/v7` build, so the image uses `pip`). Generate it
+before building locally:
+
+```bash
+uv export --frozen --no-dev --no-emit-project --no-hashes -o requirements.txt
+```
+
+> `requirements.txt` is git-ignored; CI regenerates it on every build. Re-run the
+> command above after changing dependencies.
+
 Use `compose-dev.yml`:
 
 ```bash

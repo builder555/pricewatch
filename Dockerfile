@@ -4,16 +4,13 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 ENV PYTHONUNBUFFERED=1
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 
 RUN apk update \
     && apk add --no-cache cronie firefox-esr \
-    && uv export --frozen --no-dev --no-emit-project -o requirements.txt \
-    && uv pip install --system --no-cache -r requirements.txt
+    && python -m pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
