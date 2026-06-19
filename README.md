@@ -86,13 +86,12 @@ Then modify the docker-compose.yml file to use it:
 #### Prerequisites
 
 * python 3.10+
-* pipenv
+* [uv](https://docs.astral.sh/uv/)
 
 #### Install
 
 ```bash
-PIPENV_VENV_IN_PROJECT=true pipenv install
-cp items-example.json app/db/data/items.json
+uv sync
 ```
 
 #### Set up notifier
@@ -103,8 +102,7 @@ cp items-example.json app/db/data/items.json
 #### Run - price monitor
 
 ```bash
-$ PIPENV_VENV_IN_PROJECT=true pipenv shell 
-$ python main.py 
+$ uv run python main.py
 ```
 
 You should see similar output (if using demo notifier):
@@ -125,8 +123,7 @@ Price has changed for HomeDepot screwdriver set from $9999 to $29.97. Check it o
 To use the UI, run the following:
 
 ```bash
-pipenv shell
-python -m app.ui.server
+uv run python -m app.ui.server
 ```
 
 #### Run automatically
@@ -134,8 +131,15 @@ You can set up a cronjob to run periodically
 
 Assumptions:
 * the full path to the directory is `/home/me/pricewatch`
-* `pipenv` is in `/usr/bin/pipenv` 
+* `uv` is in `/usr/bin/uv` 
 
 ```
-0 */4 * * * cd /home/me/pricewatch && /usr/bin/pipenv run start >>log.txt 2>>error.txt
+0 */4 * * * cd /home/me/pricewatch && /usr/bin/uv run python main.py >>log.txt 2>>error.txt
+```
+
+#### Testing
+To run tests:
+
+```bash
+uv run pytest
 ```
