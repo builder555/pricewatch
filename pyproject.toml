@@ -1,0 +1,23 @@
+[project]
+name = "pricewatch"
+version = "0.1.0"
+description = "Track prices of items across online stores and get notified on changes."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4",
+    "requests",
+    "python-telegram-bot",
+    "httpx",
+    "selenium",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-watch",
+    "black",
+]
+
+[tool.uv]
+package = false
