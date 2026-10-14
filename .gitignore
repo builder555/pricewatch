@@ -6,3 +6,5 @@ log.txt
 error.txt
 app/db/data
 requirements.txt
+.DS_Store
+data/
