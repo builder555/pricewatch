@@ -135,6 +135,183 @@
         .actions > *:not(:last-child) {
           margin-left: 0.5rem;
         }
+
+        /* Price history */
+        :root {
+          --chart-line: #1f77d0;
+          --chart-fill: rgba(31, 119, 208, 0.10);
+          --chart-grid: rgba(0, 0, 0, 0.08);
+          --chart-axis: #70777f;
+          --price-down: #1a7f37;
+          --price-up: #c62828;
+        }
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --chart-line: #5fb0f5;
+            --chart-fill: rgba(95, 176, 245, 0.12);
+            --chart-grid: rgba(255, 255, 255, 0.08);
+            --chart-axis: #a9b1ba;
+            --price-down: #4cc76a;
+            --price-up: #ff6b6b;
+          }
+        }
+        .price-cell {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          line-height: 1.2;
+          flex: none;
+        }
+        .price-now {
+          font-weight: 600;
+        }
+        .delta {
+          font-size: 0.75rem;
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+        }
+        .delta .material-symbols-outlined {
+          font-size: 1rem;
+        }
+        .delta.down { color: var(--price-down); }
+        .delta.up { color: var(--price-up); }
+        .item-main {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        .item-title {
+          flex: 1;
+          min-width: 0;
+        }
+        .sparkline {
+          display: block;
+          flex: none;
+          cursor: pointer;
+          margin-right: 0.5rem;
+        }
+        @media screen and (max-width: 480px) {
+          .sparkline {
+            display: none;
+          }
+        }
+        .sparkline path {
+          fill: none;
+          stroke: var(--chart-line);
+          stroke-width: 1.5;
+        }
+        .history-toggle.active {
+          color: var(--chart-line);
+        }
+        .history-panel {
+          flex: 0 0 100%;
+          max-width: 100%;
+          padding: 0.75rem 0.25rem 0.5rem;
+          box-sizing: border-box;
+        }
+        .history-toolbar {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+        }
+        .range-chips {
+          display: flex;
+          gap: 0.25rem;
+        }
+        .range-chips button {
+          margin: 0;
+          padding: 0.25rem 0.7rem;
+          font-size: 0.85rem;
+        }
+        .range-chips button.selected {
+          background: var(--chart-line);
+          color: var(--background-body);
+        }
+        .stats {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.25rem 1.5rem;
+          font-size: 0.85rem;
+        }
+        .stats .label {
+          color: var(--text-muted);
+          margin-right: 0.3rem;
+        }
+        .chart-wrap {
+          position: relative;
+        }
+        .chart-wrap svg {
+          display: block;
+          touch-action: pan-y;
+        }
+        .chart-grid line {
+          stroke: var(--chart-grid);
+          stroke-width: 1;
+        }
+        .chart-axis text {
+          fill: var(--chart-axis);
+          font-size: 11px;
+        }
+        .chart-line {
+          fill: none;
+          stroke: var(--chart-line);
+          stroke-width: 2;
+          stroke-linejoin: round;
+        }
+        .chart-area {
+          fill: var(--chart-fill);
+          stroke: none;
+        }
+        .chart-crosshair {
+          stroke: var(--chart-axis);
+          stroke-width: 1;
+          stroke-dasharray: 3 3;
+        }
+        .chart-dot {
+          fill: var(--chart-line);
+          stroke: var(--background-body);
+          stroke-width: 2;
+        }
+        .chart-tooltip {
+          position: absolute;
+          top: 0;
+          pointer-events: none;
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.8rem;
+          white-space: nowrap;
+          transform: translateX(-50%);
+        }
+        .chart-tooltip strong {
+          display: block;
+        }
+        .changes {
+          max-height: 14rem;
+          overflow-y: auto;
+          margin-top: 0.75rem;
+        }
+        .changes table {
+          width: 100%;
+          margin: 0;
+          font-size: 0.85rem;
+          table-layout: auto;
+        }
+        .changes td, .changes th {
+          padding: 0.2rem 0.5rem;
+        }
+        .changes .num {
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+        .muted {
+          color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -155,20 +332,56 @@
         </div>
         <div class="loader" v-show="isProcessing"></div>
         <div
-            v-for="(item, index) in filteredItems"
+            v-for="item in filteredItems"
             :key="item.id"
             class="columns alternate-row-colors p-1"
             :style="item.isEditing ? { 'background-color': 'transparent' } : {}"
         >
-            <div class="column is-8" v-if="!item.isEditing">
-                <a :href="item.url" target="blank_">{{ item.name }}</a><br>
-                <h6 class="p-0 m-0" :class="{'warning': isTooOld(item.lastFetchDate)}">Last price fetched: {{ utcToLocal(item.lastFetchDate) }}</h6>
+            <div class="column is-8 item-main" v-if="!item.isEditing">
+                <div class="item-title">
+                    <a :href="item.url" target="blank_">{{ item.name }}</a><br>
+                    <h6 class="p-0 m-0" :class="{'warning': isTooOld(item.lastFetchDate)}">Last price fetched: {{ utcToLocal(item.lastFetchDate) }}</h6>
+                </div>
+                <svg
+                  v-if="item.changes && item.changes.length"
+                  class="sparkline"
+                  :width="SPARK_W"
+                  :height="SPARK_H"
+                  @click="toggleHistory(item)"
+                  role="img"
+                  :aria-label="`Price trend for ${item.name}`"
+                >
+                    <path :d="sparkPath(item)"></path>
+                </svg>
             </div>
             <div class="column is-4 align-right actions" v-if="!item.isEditing">
-                ${{ item.prices[item.prices.length - 1][1] }}
+                <div class="price-cell">
+                    <span class="price-now">{{ money(currentPrice(item)) }}</span>
+                    <span
+                      v-if="lastDelta(item)"
+                      class="delta"
+                      :class="lastDelta(item).diff < 0 ? 'down' : 'up'"
+                      :title="`Previous price ${money(lastDelta(item).prev)} until ${shortDate(lastDelta(item).t)}`"
+                    >
+                        <span class="material-symbols-outlined">{{ lastDelta(item).diff < 0 ? 'arrow_downward' : 'arrow_upward' }}</span>
+                        {{ money(Math.abs(lastDelta(item).diff)) }}
+                    </span>
+                </div>
                 <div
                   tabindex="0"
-                  @click="modifyItem(index)"
+                  @click="toggleHistory(item)"
+                  @keydown.enter="toggleHistory(item)"
+                  role="button"
+                  class="history-toggle"
+                  :class="{ active: item.showHistory }"
+                  title="Price history"
+                  v-if="item.isSaved"
+                >
+                    <span class="material-symbols-outlined">monitoring</span>
+                </div>
+                <div
+                  tabindex="0"
+                  @click="modifyItem(item)"
                   role="button"
                   class="info"
                   :disabled="item.isEditing || item.isProcessing"
@@ -177,7 +390,7 @@
                 </div>
                 <div
                   tabindex="0"
-                  @click="deleteItem(index)"
+                  @click="deleteItem(item)"
                   role="button"
                   class="danger"
                   :disabled="item.isEditing || item.isProcessing"
@@ -200,7 +413,7 @@
                   class="column is-12-mobile"
                 >
                 <button
-                  @click="saveItem(index)"
+                  @click="saveItem(item)"
                   class="info"
                   :disabled="item.isProcessing"
                 >
@@ -208,16 +421,153 @@
                   <span v-else>Save</span>
                 </button>
                 <button
-                  @click="cancelEdit(index)"
+                  @click="cancelEdit(item)"
                   class="warning"
                   :disabled="item.isProcessing"
                 >Cancel</button>
+            </div>
+            <div v-if="item.showHistory && !item.isEditing" class="history-panel">
+                <div class="history-toolbar">
+                    <div class="range-chips">
+                        <button
+                          v-for="r in RANGES"
+                          :key="r.key"
+                          :class="{ selected: item.range === r.key }"
+                          @click="item.range = r.key; item.hover = null"
+                        >{{ r.key }}</button>
+                    </div>
+                    <div class="stats" v-if="rangeStats(item)">
+                        <span><span class="label">Low</span>{{ money(rangeStats(item).min) }}</span>
+                        <span><span class="label">High</span>{{ money(rangeStats(item).max) }}</span>
+                        <span v-if="rangeStats(item).diff !== 0">
+                            <span class="label">Change</span>
+                            <span :class="rangeStats(item).diff < 0 ? 'delta down' : 'delta up'">
+                                {{ rangeStats(item).diff < 0 ? '-' : '+' }}{{ money(Math.abs(rangeStats(item).diff)) }}
+                                ({{ rangeStats(item).pct }}%)
+                            </span>
+                        </span>
+                        <span v-else class="muted">No change in this period</span>
+                    </div>
+                </div>
+                <div class="chart-wrap" v-if="chartModel(item)">
+                    <svg
+                      :width="chartWidth"
+                      :height="CHART_H"
+                      role="img"
+                      :aria-label="`Price history chart for ${item.name}`"
+                      @pointermove="onChartHover($event, item)"
+                      @pointerdown="onChartHover($event, item)"
+                      @pointerleave="item.hover = null"
+                    >
+                        <g class="chart-grid">
+                            <line
+                              v-for="tick in chartModel(item).yTicks"
+                              :key="'g' + tick.v"
+                              :x1="CHART_PAD.l"
+                              :x2="chartWidth - CHART_PAD.r"
+                              :y1="tick.y"
+                              :y2="tick.y"
+                            ></line>
+                        </g>
+                        <g class="chart-axis">
+                            <text
+                              v-for="tick in chartModel(item).yTicks"
+                              :key="'y' + tick.v"
+                              :x="CHART_PAD.l - 6"
+                              :y="tick.y + 4"
+                              text-anchor="end"
+                            >{{ money(tick.v, true) }}</text>
+                            <text
+                              v-for="tick in chartModel(item).xTicks"
+                              :key="'x' + tick.t"
+                              :x="tick.x"
+                              :y="CHART_H - 6"
+                              :text-anchor="tick.anchor"
+                            >{{ tick.label }}</text>
+                        </g>
+                        <path class="chart-area" :d="chartModel(item).area"></path>
+                        <path class="chart-line" :d="chartModel(item).line"></path>
+                        <g v-if="item.hover">
+                            <line
+                              class="chart-crosshair"
+                              :x1="item.hover.x"
+                              :x2="item.hover.x"
+                              :y1="CHART_PAD.t"
+                              :y2="CHART_H - CHART_PAD.b"
+                            ></line>
+                            <circle class="chart-dot" :cx="item.hover.x" :cy="item.hover.y" r="5"></circle>
+                        </g>
+                    </svg>
+                    <div
+                      v-if="item.hover"
+                      class="chart-tooltip"
+                      :style="{ left: clamp(item.hover.x, 60, chartWidth - 60) + 'px' }"
+                    >
+                        <strong>{{ money(item.hover.p) }}</strong>
+                        <span class="muted">{{ shortDate(item.hover.t) }}</span>
+                    </div>
+                </div>
+                <div class="changes">
+                    <table>
+                        <thead>
+                            <tr><th>Date</th><th class="num">Price</th><th class="num">Change</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in changeRows(item)" :key="row.t">
+                                <td>{{ shortDate(row.t) }}</td>
+                                <td class="num">{{ money(row.p) }}</td>
+                                <td class="num">
+                                    <span v-if="row.diff !== null" class="delta" :class="row.diff < 0 ? 'down' : 'up'">
+                                        {{ row.diff < 0 ? '-' : '+' }}{{ money(Math.abs(row.diff)) }}
+                                    </span>
+                                    <span v-else class="muted">first seen</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
     <script src="vue.global.prod.min.js"></script>
     <script>
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
+        const DAY_MS = 24 * 60 * 60 * 1000;
+        const SPARK_W = 90;
+        const SPARK_H = 28;
+        const CHART_H = 240;
+        const CHART_PAD = { l: 64, r: 12, t: 12, b: 26 };
+        const RANGES = [
+          { key: '1M', days: 30 },
+          { key: '3M', days: 90 },
+          { key: '6M', days: 182 },
+          { key: '1Y', days: 365 },
+          { key: 'All', days: null },
+        ];
+        // some legacy timestamps lack the trailing "Z"; treat them like the rest
+        const parseTs = (ts) => Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(ts) ? ts : ts + 'Z');
+        // collapse raw price samples into the points where the price actually changed
+        const buildChanges = (prices) => {
+          const changes = [];
+          let lastTs = null;
+          for (const [ts, price] of prices) {
+            if (!(price > 0)) continue; // 0 means the reader failed to fetch
+            const t = parseTs(ts);
+            if (Number.isNaN(t)) continue;
+            lastTs = t;
+            if (!changes.length || changes[changes.length - 1].p !== price) {
+              changes.push({ t, p: price });
+            }
+          }
+          return { changes, lastTs };
+        };
+        const niceStep = (span, count) => {
+          const raw = span / Math.max(count, 1);
+          const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+          const norm = raw / mag;
+          const nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+          return nice * mag;
+        };
         const baseURl = `${window.location.protocol}//${window.location.host}`;
         const isProcessing = ref(false);
         const apiGetItems = async () => {
@@ -291,17 +641,28 @@
               try {
                 isProcessing.value = true;
                 const fetchedItems = await apiGetItems();
+                const prevViewState = new Map(
+                  items.value.filter(i => i.isSaved).map(i => [i.url, { showHistory: i.showHistory, range: i.range }])
+                );
                 items.value = fetchedItems.map(item => {
                   const date = new Date(item.prices[item.prices.length - 1][0]);
                   if (date > latestDate.value) latestDate.value = date;
+                  const { changes, lastTs } = buildChanges(item.prices);
+                  const prev = prevViewState.get(item.url);
                   return {
                     ...item,
+                    changes,
+                    lastTs,
+                    showHistory: prev ? prev.showHistory : false,
+                    range: prev ? prev.range : '1Y',
+                    hover: null,
                     isSaved: true,
                     isEditing: false,
                     isProcessing: false,
                     lastFetchDate: item.prices[item.prices.length - 1][0],
                   }
                 });
+                isProcessing.value = false;
               } catch (error) {
                 alert('Something went wrong when loading items. Check the server log.');
                 isProcessing.value = false;
@@ -326,13 +687,16 @@
               });
             };
         
-            const deleteItem = async (index) => {
+            // the server addresses items by their position among saved items, which
+            // differs from the on-screen position while searching or adding an item
+            const serverIndex = (item) => items.value.filter(i => i.isSaved).indexOf(item);
+
+            const deleteItem = async (item) => {
               if (confirm('Are you sure?')) {
                 try {
-                  item = items.value[index];
                   item.isProcessing = true;
-                  await apiDeleteItem(index);
-                  items.value.splice(index, 1);
+                  await apiDeleteItem(serverIndex(item));
+                  items.value.splice(items.value.indexOf(item), 1);
                 } catch (error) {
                   item.isProcessing = false;
                   alert('Something went wrong. Check the server log.');
@@ -340,12 +704,12 @@
               }
             };
         
-            const modifyItem = (index) => {
-              items.value[index].isEditing = true;
+            const modifyItem = (item) => {
+              item.original = { name: item.name, url: item.url };
+              item.isEditing = true;
             };
         
-            const saveItem = async (index) => {
-              const item = items.value[index];
+            const saveItem = async (item) => {
               const { name, url } = item;
               item.isProcessing = true;
               try {
@@ -353,7 +717,7 @@
                   await apiAddItem({ name, url });
                 }
                 else {
-                  await apiUpdateItem(index, { name, url });
+                  await apiUpdateItem(serverIndex(item), { name, url });
                 }
                 await fetchAllItems();
                 item.isSaved = true;
@@ -365,19 +729,203 @@
               }
             };
         
-            const cancelEdit = (index) => {
-              if (!items.value[index].isSaved) {
-                items.value.splice(index, 1);
+            const cancelEdit = (item) => {
+              if (!item.isSaved) {
+                items.value.splice(items.value.indexOf(item), 1);
               } else {
-                items.value[index].isEditing = false;
+                Object.assign(item, item.original);
+                item.isEditing = false;
               }
             };
             const isoToLocalDate = (isoDate) => {
               const date = new Date(isoDate);
               return date.toLocaleDateString();
             };
-        
-            return { 
+
+            // ---- price history ----
+            const chartWidth = ref(700);
+            const measureChart = () => {
+              const panel = document.querySelector('.history-panel');
+              if (!panel) return;
+              const style = getComputedStyle(panel);
+              const inner = panel.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+              if (inner > 0) chartWidth.value = Math.floor(inner);
+            };
+            window.addEventListener('resize', measureChart);
+
+            const toggleHistory = async (item) => {
+              item.showHistory = !item.showHistory;
+              item.hover = null;
+              await nextTick();
+              measureChart();
+            };
+
+            const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+            const money = (v, axis = false) => {
+              if (v === null || v === undefined || Number.isNaN(v)) return '-';
+              if (axis && Number.isInteger(v)) return `$${v.toLocaleString()}`;
+              return `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            };
+            const shortDate = (t) => new Date(t).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+            const currentPrice = (item) => item.prices[item.prices.length - 1][1];
+
+            const lastDelta = (item) => {
+              const c = item.changes;
+              if (!c || c.length < 2) return null;
+              const last = c[c.length - 1];
+              const prev = c[c.length - 2];
+              return { diff: last.p - prev.p, prev: prev.p, t: last.t };
+            };
+
+            const priceAt = (changes, t) => {
+              let p = changes[0].p;
+              for (const c of changes) {
+                if (c.t > t) break;
+                p = c.p;
+              }
+              return p;
+            };
+
+            const rangeBounds = (item) => {
+              const first = item.changes[0].t;
+              const end = Math.max(item.lastTs, first);
+              const r = RANGES.find(r => r.key === item.range);
+              const start = r && r.days ? Math.max(first, end - r.days * DAY_MS) : first;
+              return { start, end };
+            };
+
+            // step points ([t, price]) covering [start, end]
+            const stepPoints = (changes, start, end) => {
+              const pts = [[start, priceAt(changes, start)]];
+              for (const c of changes) {
+                if (c.t <= start || c.t > end) continue;
+                pts.push([c.t, pts[pts.length - 1][1]]);
+                pts.push([c.t, c.p]);
+              }
+              pts.push([end, pts[pts.length - 1][1]]);
+              return pts;
+            };
+
+            const rangeStats = (item) => {
+              if (!item.changes || !item.changes.length) return null;
+              const { start, end } = rangeBounds(item);
+              const pts = stepPoints(item.changes, start, end);
+              const values = pts.map(p => p[1]);
+              const first = values[0];
+              const last = values[values.length - 1];
+              const diff = last - first;
+              return {
+                min: Math.min(...values),
+                max: Math.max(...values),
+                diff,
+                pct: first ? ((diff / first) * 100).toFixed(1) : '0',
+              };
+            };
+
+            const sparkPath = (item) => {
+              const c = item.changes;
+              const start = c[0].t;
+              const end = Math.max(item.lastTs, start + 1);
+              const pts = stepPoints(c, start, end);
+              const vals = pts.map(p => p[1]);
+              const lo = Math.min(...vals);
+              const hi = Math.max(...vals);
+              const x = t => 1 + ((t - start) / (end - start)) * (SPARK_W - 2);
+              const y = v => hi === lo ? SPARK_H / 2 : 2 + (1 - (v - lo) / (hi - lo)) * (SPARK_H - 4);
+              return pts.map((p, i) => `${i ? 'L' : 'M'}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join('');
+            };
+
+            const chartModel = (item) => {
+              if (!item.changes || !item.changes.length) return null;
+              const w = chartWidth.value;
+              const { start, end: rawEnd } = rangeBounds(item);
+              const end = Math.max(rawEnd, start + DAY_MS);
+              const pts = stepPoints(item.changes, start, end);
+              const vals = pts.map(p => p[1]);
+              let lo = Math.min(...vals);
+              let hi = Math.max(...vals);
+              if (hi === lo) {
+                const pad = Math.max(hi * 0.1, 1);
+                lo -= pad;
+                hi += pad;
+              }
+              const step = niceStep(hi - lo, 4);
+              lo = Math.max(0, Math.floor(lo / step) * step);
+              hi = Math.ceil(hi / step) * step;
+
+              const plotL = CHART_PAD.l;
+              const plotR = w - CHART_PAD.r;
+              const plotT = CHART_PAD.t;
+              const plotB = CHART_H - CHART_PAD.b;
+              const xOf = t => plotL + ((t - start) / (end - start)) * (plotR - plotL);
+              const yOf = v => plotB - ((v - lo) / (hi - lo)) * (plotB - plotT);
+              const tOf = x => start + ((x - plotL) / (plotR - plotL)) * (end - start);
+
+              const line = pts.map((p, i) => `${i ? 'L' : 'M'}${xOf(p[0]).toFixed(1)},${yOf(p[1]).toFixed(1)}`).join('');
+              const area = `${line}L${plotR.toFixed(1)},${plotB}L${plotL},${plotB}Z`;
+
+              const yTicks = [];
+              for (let v = lo; v <= hi + step / 2; v += step) {
+                const rounded = Math.round(v * 100) / 100;
+                yTicks.push({ v: rounded, y: yOf(rounded) });
+              }
+
+              const span = end - start;
+              const fmt = span > 400 * DAY_MS
+                ? { month: 'short', year: 'numeric' }
+                : { month: 'short', day: 'numeric' };
+              const nx = Math.max(2, Math.min(6, Math.floor((plotR - plotL) / 110)));
+              const xTicks = [];
+              for (let i = 0; i < nx; i++) {
+                const t = start + (span * i) / (nx - 1);
+                xTicks.push({
+                  t,
+                  x: xOf(t),
+                  label: new Date(t).toLocaleDateString(undefined, fmt),
+                  anchor: i === 0 ? 'start' : i === nx - 1 ? 'end' : 'middle',
+                });
+              }
+              return { line, area, yTicks, xTicks, xOf, yOf, tOf, plotL, plotR };
+            };
+
+            const onChartHover = (event, item) => {
+              const model = chartModel(item);
+              if (!model) return;
+              const rect = event.currentTarget.getBoundingClientRect();
+              const x = clamp(event.clientX - rect.left, model.plotL, model.plotR);
+              const t = model.tOf(x);
+              const p = priceAt(item.changes, t);
+              item.hover = { x, y: model.yOf(p), t, p };
+            };
+
+            const changeRows = (item) => {
+              const c = item.changes || [];
+              return c.map((row, i) => ({
+                t: row.t,
+                p: row.p,
+                diff: i === 0 ? null : row.p - c[i - 1].p,
+              })).reverse();
+            };
+
+            return {
+              CHART_H,
+              CHART_PAD,
+              RANGES,
+              SPARK_H,
+              SPARK_W,
+              changeRows,
+              chartModel,
+              chartWidth,
+              clamp,
+              currentPrice,
+              lastDelta,
+              money,
+              onChartHover,
+              rangeStats,
+              shortDate,
+              sparkPath,
+              toggleHistory,
               addItem,
               cancelEdit,
               deleteItem,
