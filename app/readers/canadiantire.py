@@ -1,6 +1,8 @@
-import random
 import httpx
-from .__agents import agents
+from curl_cffi import requests
+
+# Akamai blocks non-browser TLS fingerprints, so plain httpx gets 403
+IMPERSONATE = "chrome"
 
 SITE = "www.canadiantire.ca"
 
@@ -13,7 +15,7 @@ def extract_subscription_key(html):
     return html[key_start:key_end]
 
 
-def fetch_price_from_api(subscription_key: str, sku: str, client: httpx.Client):
+def fetch_price_from_api(subscription_key: str, sku: str):
     url = "https://apim.canadiantire.ca/v1/product/api/v1/product/sku/PriceAvailability?lang=en_CA&storeId=126&cache=true"
     headers = {
         "authority": "apim.canadiantire.ca",
@@ -26,11 +28,12 @@ def fetch_price_from_api(subscription_key: str, sku: str, client: httpx.Client):
         "ocp-apim-subscription-key": subscription_key,
         "origin": "https://www.canadiantire.ca",
         "referer": "https://www.canadiantire.ca/",
-        "user-agent": random.choice(agents),
         "x-web-host": "www.canadiantire.ca",
     }
     data = {"skus": [{"code": sku, "lowStockThreshold": 0}]}
-    r = client.post(url, headers=headers, json=data, timeout=10)
+    r = requests.post(
+        url, headers=headers, json=data, impersonate=IMPERSONATE, timeout=10
+    )
     resp = r.json()
     return resp["skus"][0]["currentPrice"]["value"]
 
@@ -49,7 +52,8 @@ def extract_number(url):
 
 
 def get_price(url: str, client: httpx.Client) -> float:
-    r = client.get(url, headers={"user-agent": random.choice(agents)}, timeout=10)
+    r = requests.get(url, impersonate=IMPERSONATE, timeout=10)
+    r.raise_for_status()
     subscription_key = extract_subscription_key(r.text)
     sku = extract_number(url)
-    return fetch_price_from_api(subscription_key, sku, client)
+    return fetch_price_from_api(subscription_key, sku)
